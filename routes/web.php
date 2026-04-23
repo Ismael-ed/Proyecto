@@ -1,34 +1,23 @@
 <?php
 
-use App\Http\Controllers\AlumnoController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProductoController;
 
-Route::get('/', function () {
-    return redirect()->route('alumnos');
+Route::get('/index', function () {
+    return view('index');
 });
-/* ***FORMA INCIAL - MÁS FÁCIL DE ENTENDER ***
-//Rutas para hacer un CRUD de Alumnos
-//Ruta para consultar todos los alumnos
-Route::get('/alumnos',[AlumnoController::class,'obtenerAlumnos'])->name('alumnos');
-//Ruta para consultar un único alumno
-Route::get('/alumnos/{idAlumno}',[AlumnoController::class,'verAlumno'])->name('alumno');
-//Ruta para insertar un alumno
-Route::post('/alumnos',[AlumnoController::class,'insertarAlumno'])->name('insertar');
-//Ruta para modificar un alumno
-Route::put('/alumnos',[AlumnoController::class,'modificarAlumno'])->name('modificar');
-//Ruta para borrar un alumno
-Route::delete('/alumnos',[AlumnoController::class,'borrarAlumno'])->name('borrar');
-**********       */
-Route::controller(AlumnoController::class)->group(function(){
-    //Rutas para hacer un CRUD de Alumnos
-    //Ruta para consultar todos los alumnos
-    Route::get('/alumnos','obtenerAlumnos')->name('alumnos');
-    //Ruta para consultar un único alumno
-    Route::get('/alumnos/{idAlumno}','verAlumno')->name('alumno');
-    //Ruta para insertar un alumno
-    Route::post('/alumnos','insertarAlumno')->name('insertar');
-    //Ruta para modificar un alumno
-    Route::put('/alumnos/{idAlumno}','modificarAlumno')->name('modificar');
-    //Ruta para borrar un alumno
-    Route::delete('/alumnos','borrarAlumno')->name('borrar');
+
+Route::controller(LoginController::class)->group(function () {
+    Route::post('registro', 'registro');
+    Route::post('login', 'login');
 });
+
+Route::get('/user', function (Request $request) {
+    return $request->user();
+})->middleware('auth:sanctum');
+
+Route::get('salir', [LoginController::class, 'salir'])->middleware('auth:sanctum');
+
+Route::apiResource('productos', ProductoController::class)->middleware('auth:sanctum');
