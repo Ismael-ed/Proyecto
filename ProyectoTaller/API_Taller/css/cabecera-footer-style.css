@@ -1,0 +1,73 @@
+/*Ajustando un poco de la pagina*/
+html,body{
+    height: 100%;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+
+/*Esto es la cabecera*/
+
+header {
+    background-color: var(--verde-oscuro);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 12px;
+}
+
+.logo-cabecera {
+    font-size: 32px;
+    color: var(--negro-puro);
+}
+
+.titulo-pagina {
+    font: var(--subtitulo-2);
+    color: var(--blanco-puro);
+}
+.logo-pagina{
+    text-decoration: none;
+}
+
+.menu-cabecera {
+    display: flex;
+    gap: 20px;
+}
+.menu-cabecera a{
+    padding: 10px;
+}
+
+.menu-cabecera a:hover{
+    background-color: var(--verde-claro);
+}
+
+.menu-cabecera a {
+    text-decoration: none;
+    color: var(--blanco-puro);
+    font: var(--subtitulo-4);
+}
+
+
+.cuenta-cabecera {
+    font-size: 35px;
+    color: var(--blanco-puro);
+    padding: 6px;
+    border-radius: 50%;
+}
+
+
+/*Esto seria el footer */
+footer {
+    background-color: #000;
+    color: #fff;
+    padding: 20px;
+    text-align: left;
+}
+
+.footer-descripcion {
+    font: var(--parrafo);
+    margin: 5px 0;
+}

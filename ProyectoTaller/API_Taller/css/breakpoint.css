@@ -1,0 +1,121 @@
+/*breakpoints, gracias Peces Gordos por enseñarme a hacer Responsive Design para 7 tipos de pantallas distintos*/
+
+:root {
+    --negro-puro: #000000;
+    --blanco-puro: #FFFFFF;
+    --verde-oscuro: #3C6441;
+    --verde-claro: #469155;
+
+    --titulo: 56px "Bebas Neue", sans-serif;
+
+    --subtitulo-1: 42px "Bebas Neue", sans-serif;
+    --subtitulo-2: 34px "Bebas Neue", sans-serif;
+
+    --subtitulo-3: 26px "Roboto Condensed", sans-serif;
+    --subtitulo-4: 22px "Roboto Condensed", sans-serif;
+    --subtitulo-5: 18px "Roboto Condensed", sans-serif;
+
+    --parrafo: 16px "Roboto Condensed", sans-serif;
+    --boton: 16px "Roboto Condensed", sans-serif;
+}
+
+@media (max-width: 1500px) {
+    :root {
+        --titulo: 48px "Bebas Neue", sans-serif;
+
+        --subtitulo-1: 36px "Bebas Neue", sans-serif;
+        --subtitulo-2: 30px "Bebas Neue", sans-serif;
+
+        --subtitulo-3: 22px "Roboto Condensed", sans-serif;
+        --subtitulo-4: 20px "Roboto Condensed", sans-serif;
+        --subtitulo-5: 17px "Roboto Condensed", sans-serif;
+
+        --parrafo: 15px "Roboto Condensed", sans-serif;
+        --boton: 15px "Roboto Condensed", sans-serif;
+    }
+}
+
+@media (max-width: 900px) {
+    :root {
+        --titulo: 38px "Bebas Neue", sans-serif;
+
+        --subtitulo-1: 30px "Bebas Neue", sans-serif;
+        --subtitulo-2: 26px "Bebas Neue", sans-serif;
+
+        --subtitulo-3: 20px "Roboto Condensed", sans-serif;
+        --subtitulo-4: 18px "Roboto Condensed", sans-serif;
+        --subtitulo-5: 16px "Roboto Condensed", sans-serif;
+
+        --parrafo: 14px "Roboto Condensed", sans-serif;
+        --boton: 15px "Roboto Condensed", sans-serif;
+    }
+    .contenido-index{
+        align-items: center;
+        padding-top: 60px;
+        padding-bottom: 60px;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .contenido-index-izquierda {
+        width: 80%;
+    }
+}
+
+@media (max-width: 500px) {
+    :root {
+        --titulo: 30px "Bebas Neue", sans-serif;
+
+        --subtitulo-1: 24px "Bebas Neue", sans-serif;
+        --subtitulo-2: 20px "Bebas Neue", sans-serif;
+
+        --subtitulo-3: 18px "Roboto Condensed", sans-serif;
+        --subtitulo-4: 16px "Roboto Condensed", sans-serif;
+        --subtitulo-5: 15px "Roboto Condensed", sans-serif;
+
+        --parrafo: 14px "Roboto Condensed", sans-serif;
+        --boton: 15px "Roboto Condensed", sans-serif;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .cabecera-izquierda {
+        padding: 15px;
+        justify-content: space-between;
+    }
+
+    .titulo-pagina {
+        font: var(--subtitulo-4);
+    }
+
+    .menu-cabecera {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    .menu-cabecera a {
+        padding: 15px;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        font: var(--subtitulo-5);
+        background-color: var(--verde-oscuro);
+        text-align: center;
+        width: 50%;
+    }
+
+    .cabecera-derecha {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 15px;
+    }
+    /*No me preguntes porque pero por alguna razon en el style.css al tener mas prioridad 
+    por acceso antes no deja cambiar el estilo del footer ya que lo esta editando primero el style.css,
+    entonces por alguna razon estoy obligado a aumentar la prioridad del estilo llamando al estilo desde el padre para luego de ahí acceder al footer*/
+    body footer {
+        text-align: center;
+    }
+
+}
