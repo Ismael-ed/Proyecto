@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Talleres Casti</title>
+    <link rel="shortcut icon" href="img/tools.svg" type="image/x-icon">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light d-flex align-items-center justify-content-center vh-100 m-0">
+
+    <div class="card shadow border-0 p-4 w-100" style="max-width: 400px;">
+        <div class="card-body text-center">
+            <i class="bi bi-tools text-success" style="font-size: 3rem;"></i>
+
+            <h1 class="display-6 fw-bold mb-4 text-dark" style="font-family: 'Bebas Neue', cursive;">
+                Talleres Casti
+            </h1>
+
+            <form>
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com">
+                    <label for="email">Correo electrónico</label>
+                </div>
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" placeholder="Contraseña">
+                    <label for="password">Contraseña</label>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                    Iniciar Sesión
+                </button>
+
+                <div class="d-flex justify-content-between">
+                    <a href="registro.html" class="text-decoration-none small text-success fw-bold">Crear cuenta</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
