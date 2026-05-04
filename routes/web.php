@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ObjetoController;
 
 Route::get('/index', function () {
     return view('index');
@@ -20,4 +20,4 @@ Route::get('/user', function (Request $request) {
 
 Route::get('salir', [LoginController::class, 'salir'])->middleware('auth:sanctum');
 
-Route::apiResource('productos', ProductoController::class)->middleware('auth:sanctum');
+Route::apiResource('objetos', ObjetoController::class)->middleware('auth:sanctum');
