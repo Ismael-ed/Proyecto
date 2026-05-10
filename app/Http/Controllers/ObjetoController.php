@@ -9,17 +9,11 @@ use Illuminate\Support\Facades\DB;
 
 class ObjetoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return Objeto::all();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {
@@ -48,17 +42,11 @@ class ObjetoController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Objeto $objeto)
     {
         return $objeto;
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Objeto $objeto)
     {
         try {
@@ -96,9 +84,6 @@ class ObjetoController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Objeto $objeto)
     {
         try {

@@ -19,12 +19,16 @@ class LoginController extends Controller
                 'nombre' => 'required',
                 'email' => 'required|unique:App\Models\User|email:rfc,dns', //No se puede repetir
                 'ps1' => 'required',
-                'ps2' => 'required|same:ps1'
+                'ps2' => 'required|same:ps1',
+                'telefono'=>'required',
+                'tipoUsuario'=>'required'
             ]);
             $us = new User();
             $us->name = $r->nombre;
             $us->email = $r->email;
             $us->password = Hash::make($r->ps1);
+            $us->telefono=$r->telefono;
+            $us->tipoUsuario=$r->tipoUsuario;
             $us->save();
             return $us;
         } catch (\Throwable $th) {

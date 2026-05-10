@@ -4,10 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ObjetoController;
-
-//Route::get('/index', function () {
-//    return view('index');
-//});
+use App\Http\Controllers\AlquilerController;
+use App\Http\Controllers\ComprasController;
+use App\Http\Controllers\FacturaController;
 
 Route::controller(LoginController::class)->group(function () {
     Route::post('registro', 'registro');
@@ -20,4 +19,9 @@ Route::get('/user', function (Request $request) {
 
 Route::get('salir', [LoginController::class, 'salir'])->middleware('auth:sanctum');
 
-Route::apiResource('objetos', ObjetoController::class);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('objetos', ObjetoController::class);
+    Route::apiResource('alquileres', AlquilerController::class);
+    Route::apiResource('compras', ComprasController::class);
+    Route::apiResource('facturas', FacturaController::class);
+});
