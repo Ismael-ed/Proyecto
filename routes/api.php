@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ObjetoController;
 use App\Http\Controllers\AlquilerController;
+use App\Http\Controllers\CitaController;
 use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\FacturaController;
 
@@ -18,6 +19,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('salir', [LoginController::class, 'salir'])->middleware('auth:sanctum');
+
+Route::apiResource('citas', CitaController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('objetos', ObjetoController::class);
