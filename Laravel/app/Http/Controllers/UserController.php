@@ -1,15 +1,11 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
-
 use App\Models\User;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-
+use Exception;
 
 class UserController extends Controller
 {
@@ -18,25 +14,15 @@ class UserController extends Controller
         return User::all();
     }
 
-
-    public function show(User $user)
-    {
-        return $user;
-    }
-
-
     public function store(Request $request)
     {
         try {
             $request->validate([
                 'nombre' => 'required',
-                'email' => 'required',
+                'email' => 'required|email|unique:users',
                 'password' => 'required',
-                'telefono' => 'nullable',
-                'tipoUsuario' => 'required',
-                'descuentoactivo' => 'nullable'
+                'tipoUsuario' => 'required'
             ]);
-
 
             $user = new User();
             $user->nombre = $request->nombre;
@@ -44,8 +30,6 @@ class UserController extends Controller
             $user->password = Hash::make($request->password);
             $user->telefono = $request->telefono;
             $user->tipoUsuario = $request->tipoUsuario;
-            $user->descuentoactivo = $request->descuentoactivo ?? false;
-
 
             if ($user->save()) {
                 return $user;
@@ -57,38 +41,45 @@ class UserController extends Controller
         }
     }
 
+    public function show(User $user)
+    {
+        return $user;
+    }
 
-    public function update(Request $request, User $user)
+    
+    public function update(Request $request, $id)
     {
         try {
+            $user = User::findOrFail($id);
+
             $request->validate([
-                'nombre' => 'required',
-                'email' => 'required',
-                'password' => 'nullable',
-                'telefono' => 'nullable',
-                'tipoUsuario' => 'required',
-                'descuentoactivo' => 'nullable'
+                'nombre' => 'required|string|max:100',
+                'telefono' => 'required|string|max:20',
+                'tipoUsuario' => 'required'
             ]);
 
-
-            if ($request->has('nombre')) $user->nombre = $request->nombre;
-            if ($request->has('email')) $user->email = $request->email;
-            if ($request->has('password') && $request->password != '') {
-                $user->password = Hash::make($request->password);
-            }
-            if ($request->has('telefono')) $user->telefono = $request->telefono;
-            if ($request->has('tipoUsuario')) $user->tipoUsuario = $request->tipoUsuario;
-            if ($request->has('descuentoactivo')) $user->descuentoactivo = $request->descuentoactivo;
-
+            $user->nombre = $request->nombre;
+            $user->telefono = $request->telefono;
+            $user->tipoUsuario = $request->tipoUsuario;
 
             if ($user->save()) {
-                return $user;
+                return response()->json($user, 200);
+            }
+        } catch (\Throwable $th) {
+            return response()->json(['mensaje' => 'Error: ' . $th->getMessage()], 500);
+        }
+    }
+
+    public function destroy(User $user)
+    {
+        try {
+            if ($user->delete()) {
+                return ["mensaje" => "Usuario eliminado"];
             } else {
-                throw new Exception('Error al actualizar el usuario');
+                throw new Exception('Error al eliminar');
             }
         } catch (\Throwable $th) {
             return response(['mensaje' => $th->getMessage()], 500);
         }
     }
-
 }

@@ -61,6 +61,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Lógica para la página de Mi Cuenta
+    if (window.location.pathname.includes("cuenta.html")) {
+        cargarDatosPerfil();
+
+        const formCuenta = document.getElementById('formCuenta');
+        if (formCuenta) {
+            formCuenta.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await guardarDatosPerfil();
+            });
+        }
+    }
+
     // funcion de login    
     const formLogin = document.getElementById('formularioLogin');
     if (formLogin) {
@@ -131,17 +144,109 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // funcion para cargar carrito en su pagina
     if (window.location.pathname.includes("carrito.html")) {
         renderizarCarrito();
     }
 
-    // funcion para cargar facturas en su pagina
     if (window.location.pathname.includes("facturas.html")) {
         cargarFacturas();
     }
 
     cargarProductos();
+});
+
+    //funcion cargar datos del perfil
+    async function cargarDatosPerfil() {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${URL_API}/user`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const usuario = res.data;
+
+            if(document.getElementById('nombre')) document.getElementById('nombre').value = usuario.nombre || '';
+            if(document.getElementById('email_perfil')) document.getElementById('email_perfil').value = usuario.email || '';
+            if(document.getElementById('telefono')) document.getElementById('telefono').value = usuario.telefono || '';
+            if(document.getElementById('display-id')) document.getElementById('display-id').innerText = `#${usuario.id}`;
+
+        } catch (e) {
+            console.error("Error al cargar perfil:", e);
+        }
+    }
+
+    //funcion para guardar datos del perfil
+async function cargarDatosPerfil() {
+    const localUser = JSON.parse(localStorage.getItem('usuario'));
+    if (!localUser) return;
+
+    document.getElementById('nombre').value = localUser.nombre || '';
+    document.getElementById('email').value = localUser.email || '';
+    document.getElementById('telefono').value = localUser.telefono || '';
+    document.getElementById('display-id').textContent = `#${localUser.id}`;
+
+    const puntos = localUser.puntosRacha || 0;
+    const contenedor = document.getElementById('contenedor-racha');
+    
+    if (contenedor) {
+        const circulos = contenedor.querySelectorAll('i');
+        circulos.forEach((circulo, index) => {
+            if (index < puntos) {
+                circulo.classList.remove('bi-circle');
+                circulo.classList.add('bi-circle-fill');
+            } else {
+                circulo.classList.remove('bi-circle-fill');
+                circulo.classList.add('bi-circle');
+            }
+        });
+    }
+
+    const statusCaja = document.getElementById('status-descuento');
+    const descTexto = document.getElementById('descuento-texto');
+    const descIcono = document.getElementById('descuento-icono');
+
+    if (localUser.descuentoActivo == 1) {
+        if (statusCaja) statusCaja.classList.add('activo');
+        if (descTexto) descTexto.textContent = "DESCUENTO DISPONIBLE";
+        if (descIcono) descIcono.textContent = "redeem";
+    } else {
+        if (statusCaja) statusCaja.classList.remove('activo');
+        if (descTexto) descTexto.textContent = "SIN DESCUENTO ACTIVO";
+        if (descIcono) descIcono.textContent = "lock";
+    }
+}
+
+async function guardarDatosPerfil(event) {
+    if (event) event.preventDefault();
+
+    const localUser = JSON.parse(localStorage.getItem('usuario'));
+    const token = localStorage.getItem('token');
+
+    const datosParaEnviar = {
+        nombre: document.getElementById('nombre').value,
+        telefono: document.getElementById('telefono').value,
+        tipoUsuario: localUser.tipoUsuario
+    };
+
+    try {
+        const res = await axios.put(`${URL_API}/usuario/${localUser.id}`, datosParaEnviar, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        localStorage.setItem('usuario', JSON.stringify(res.data));
+        window.location.reload();
+    } catch (e) {
+        console.error(e.response?.data);
+        alert("Error al actualizar");
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formCuenta');
+    if (form) {
+        form.addEventListener('submit', guardarDatosPerfil);
+    }
+    cargarDatosPerfil(); 
 });
 
 // funcion para cargar productos
@@ -213,7 +318,7 @@ async function cargarProductos() {
     }
 }
 
-// funcion para añadir al carrito (localStorage) corregida
+// funcion para añadir al carrito (localStorage)
 function añadirAlCarrito(producto, tipo) {
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
     const itemIndex = carrito.findIndex(i => i.idObjeto === producto.id && i.tipo === tipo);
@@ -296,8 +401,8 @@ function renderizarCarrito() {
         lista.appendChild(div);
     });
 
-    subtotalElem.innerText = subtotal.toFixed(2) + "€";
-    totalElem.innerText = subtotal.toFixed(2) + "€";
+    if(subtotalElem) subtotalElem.innerText = subtotal.toFixed(2) + "€";
+    if(totalElem) totalElem.innerText = subtotal.toFixed(2) + "€";
 
     const btnVaciar = document.getElementById('btnVaciarCarrito');
     if (btnVaciar) btnVaciar.onclick = () => {
