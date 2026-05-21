@@ -217,28 +217,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function guardarDatosPerfil(event) {
-        if (event) event.preventDefault();
 
-        const localUser = JSON.parse(localStorage.getItem('usuario'));
-        const token = localStorage.getItem('token');
 
-        const datosParaEnviar = {
-            nombre: document.getElementById('nombre').value,
-            telefono: document.getElementById('telefono').value,
-            tipoUsuario: localUser.tipoUsuario
-        };
+    if (event) event.preventDefault();
 
-        try {
-            const res = await axios.put(`${URL_API}/usuario/${localUser.id}`, datosParaEnviar, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+    const localUser = JSON.parse(localStorage.getItem('usuario'));
 
-            localStorage.setItem('usuario', JSON.stringify(res.data));
-            window.location.reload();
-        } catch (e) {
-            console.error(e);
-        }
+    const token = localStorage.getItem('token');
+
+    const datosParaEnviar = {
+        nombre: document.getElementById('nombre').value,
+        email: document.getElementById('email').value,
+        telefono: document.getElementById('telefono').value,
+        tipoUsuario: localUser.tipoUsuario
+    };
+
+    try {
+
+        const res = await axios.put(
+            `${URL_API}/usuario/${localUser.id}`,
+            datosParaEnviar,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        localStorage.setItem(
+            'usuario',
+            JSON.stringify(res.data)
+        );
+
+        window.location.reload();
+
+    } catch (e) {
+
+        console.error(e);
     }
+
+    }
+
 
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('formCuenta');
@@ -547,11 +566,15 @@ window.eliminarDelCarrito = function(index) {
 }
 
 // funcion para finalizar compra enviando al backend
+
 async function finalizarCompra() {
 
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 
-    if (carrito.length === 0) return;
+    if (carrito.length === 0) {
+        alert("El carrito está vacío");
+        return;
+    }
 
     const token = localStorage.getItem('token');
 
@@ -560,12 +583,13 @@ async function finalizarCompra() {
         return;
     }
 
-    const totalStr =
-        document.getElementById('total-final').innerText;
+    let totalNum = 0;
 
-    const totalNum = parseFloat(
-        totalStr.replace('€', '')
-    );
+    carrito.forEach(item => {
+        totalNum += Number(item.precio) * Number(item.cantidad);
+    });
+
+    totalNum = Number(totalNum.toFixed(2));
 
     const payload = {
         carrito: carrito,
@@ -573,17 +597,22 @@ async function finalizarCompra() {
         metodoPago: 'efectivo'
     };
 
+    console.log("PAYLOAD ENVIADO:", payload);
+
     try {
 
-        await axios.post(
+        const res = await axios.post(
             `${URL_API}/carrito/finalizar`,
             payload,
             {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             }
         );
+
+        console.log("RESPUESTA:", res.data);
 
         localStorage.removeItem('carrito');
 
@@ -591,9 +620,17 @@ async function finalizarCompra() {
 
     } catch (e) {
 
-        console.error(e);
+        console.error("ERROR COMPLETO:", e);
+
+        if (e.response) {
+            console.error("RESPUESTA BACKEND:", e.response.data);
+            alert("Error backend: " + JSON.stringify(e.response.data));
+        } else {
+            alert("Error de conexión");
+        }
     }
 }
+
 
 // funcion para cargar facturas
 async function cargarFacturas() {
@@ -630,33 +667,165 @@ async function cargarFacturas() {
 
 // funcion para ver detalles de una factura
 window.verDetallesFactura = async function(id) {
+
     try {
-        const res = await axios.get(`${URL_API}/facturas/detalles/${id}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        const { factura, items } = res.data;
+
+        const res = await axios.get(
+            `${URL_API}/facturas/detalles/${id}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }
+        );
+
+        console.log("DETALLE FACTURA:", res.data);
+
+        const factura = res.data.factura || res.data;
+        const items = res.data.items || [];
+
+        if (!factura) {
+            alert("No se encontró la factura");
+            return;
+        }
+
         let htmlItems = "";
+        let totalCalculado = 0;
+
         items.forEach(item => {
-            const labelCantidad = factura.idAlquiler ? "Meses" : "Cant.";
-            htmlItems += `<div class="d-flex justify-content-between border-bottom py-2">
-                <span>${item.nombre} x${item.cantidad} ${labelCantidad}</span>
-                <span>${(item.precio * item.cantidad).toFixed(2)}€</span>
-            </div>`;
+
+        console.log("ITEM:", item);
+
+        const esAlquiler = item.tipo === 'alquiler';
+
+        const precio =
+            Number(item.precioPagado) ||
+            Number(item.precio) ||
+            Number(item.precioUnitario) ||
+            Number(item.precioObjeto) ||
+            Number(item.coste) ||
+            0;
+
+        const cantidad =
+            Number(item.cantidad) || 1;
+
+        const subtotal = precio * cantidad;
+
+        totalCalculado += subtotal;
+
+        let detalleExtra = "";
+
+        if (esAlquiler) {
+
+            detalleExtra = `
+                <div class="small text-muted">
+                    ${cantidad} mes(es)
+                    <br>
+                    Inicio: ${item.fechaInicio}
+                    <br>
+                    Fin: ${item.fechaFin}
+                </div>
+            `;
+        }
+
+        htmlItems += `
+            <div class="d-flex justify-content-between border-bottom py-2">
+
+                <div>
+                    <strong>${item.nombre}</strong>
+
+                    ${!esAlquiler
+                        ? `<div class="small text-muted">
+                            Cantidad: ${cantidad}
+                        </div>`
+                        : detalleExtra
+                    }
+                </div>
+
+                <span>
+                    ${subtotal.toFixed(2)}€
+                </span>
+
+            </div>
+        `;
+
+
         });
+
+
         const modalDetalle = document.createElement('div');
-        modalDetalle.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;";
+
+        modalDetalle.style = `
+            position:fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background:rgba(0,0,0,0.8);
+            z-index:9999;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        `;
+
         modalDetalle.id = "temp-modal-factura";
+
+        const titulo = factura.idCompra
+            ? 'DETALLES DE COMPRA'
+            : 'DETALLES DE ALQUILER';
+
+        const totalFinal =
+            Number(factura.precioTotal) ||
+            totalCalculado;
+
         modalDetalle.innerHTML = `
-            <div class="bg-white p-4 rounded shadow-lg" style="width:90%; max-width:500px; color:black;">
-                <h2 style="font-family:'Bebas Neue'">${factura.idCompra ? 'DETALLES DE COMPRA' : 'DETALLES DE ALQUILER'}</h2>
+            <div
+                class="bg-white p-4 rounded shadow-lg"
+                style="width:90%; max-width:500px; color:black;"
+            >
+
+                <h2 style="font-family:'Bebas Neue'">
+                    ${titulo}
+                </h2>
+
                 <hr>
-                <div class="mb-3">${htmlItems}</div>
-                <div class="d-flex justify-content-between fw-bold h5"><span>TOTAL</span><span>${factura.precioTotal}€</span></div>
-                <p class="small text-muted mt-2">Método de pago: ${factura.metodoPago}</p>
-                <button class="btn-negro w-100 mt-3" onclick="document.getElementById('temp-modal-factura').remove()">CERRAR</button>
-            </div>`;
+
+                <div class="mb-3">
+                    ${htmlItems || '<p>No hay productos.</p>'}
+                </div>
+
+                <div class="d-flex justify-content-between fw-bold h5">
+                    <span>TOTAL</span>
+                    <span>${totalFinal.toFixed(2)}€</span>
+                </div>
+
+                <p class="small text-muted mt-2">
+                    Método de pago:
+                    ${factura.metodoPago || 'No especificado'}
+                </p>
+
+                <button
+                    class="btn-negro w-100 mt-3"
+                    onclick="document.getElementById('temp-modal-factura').remove()"
+                >
+                    CERRAR
+                </button>
+
+            </div>
+        `;
+
         document.body.appendChild(modalDetalle);
-    } catch (e) { console.error(e); }
+
+    } catch (e) {
+
+        console.error("ERROR DETALLES FACTURA:", e);
+
+        if (e.response) {
+            console.error(e.response.data);
+        }
+
+        alert("Error al cargar detalles de factura");
+    }
 }
 
 // funcion para cerrar sesion

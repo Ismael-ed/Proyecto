@@ -35,7 +35,7 @@ CREATE TABLE `users` (
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +44,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Ismael','ivalverg01@educarex.es','123','123123123','admin',0,0,'2026-05-05 16:51:27','2026-05-05 16:51:27');
+INSERT INTO `users` VALUES (1,'Admin','admin@gmail.com','$2y$12$uELPdZRhqYFBj513OLjv1ePc6AiW1cFZxq9xw5mupR6cWWaoHLVDC','123123122','admin',4,0,'2026-05-05 16:51:27','2026-05-21 20:45:48'),(3,'Usuario','usuario@gmail.com','$2y$12$tdljvROHblLcRfallayruOZNiebVCJHYS2Z29oOu419toVY3mRQK.','555555555','cliente',0,0,'2026-05-21 16:45:55','2026-05-21 18:47:57');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-21 19:46:08
+-- Dump completed on 2026-05-21 22:51:59

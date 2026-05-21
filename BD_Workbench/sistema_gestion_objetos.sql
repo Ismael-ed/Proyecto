@@ -36,7 +36,7 @@ CREATE TABLE `objetos` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `objetos` (
 
 LOCK TABLES `objetos` WRITE;
 /*!40000 ALTER TABLE `objetos` DISABLE KEYS */;
-INSERT INTO `objetos` VALUES (1,'Mi primer objeto',NULL,'alquiler',0,NULL,10.5,5,'Prueba de API',0,'2026-05-05 14:47:38','2026-05-05 14:47:38'),(2,'Bomba hidraúlica',NULL,'compra',0,NULL,70.8,5,NULL,0,'2026-05-05 14:48:34','2026-05-05 14:48:34');
+INSERT INTO `objetos` VALUES (1,'Mi primer objeto',NULL,'alquiler',0,NULL,10.5,5,'Prueba de API',0,'2026-05-05 14:47:38','2026-05-05 14:47:38'),(2,'Bomba hidraúlica',NULL,'compra',0,NULL,70.8,5,NULL,0,'2026-05-05 14:48:34','2026-05-05 14:48:34'),(3,'Tractor','imgs/default.png','alquiler',10,'disponible',20,5,'Un tractor',10,'2026-05-21 16:48:29','2026-05-21 17:55:16');
 /*!40000 ALTER TABLE `objetos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-21 19:46:08
+-- Dump completed on 2026-05-21 22:52:00

@@ -22,7 +22,7 @@ Route::post('salir', [LoginController::class, 'salir'])->middleware('auth:sanctu
 Route::apiResource('citas', CitaController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('usuario', UserController::class);
+    Route::put('usuario/{user}', [UserController::class, 'update']);    
     Route::apiResource('objetos', ObjetoController::class);
 
     Route::controller(CarritoController::class)->group(function () {

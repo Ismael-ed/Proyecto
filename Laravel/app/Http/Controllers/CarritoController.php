@@ -11,26 +11,26 @@ class CarritoController extends Controller
 {
     public function finalizar(Request $request)
     {
-        $request->validate([
-            'carrito' => 'required|array',
-            'carrito.*.idObjeto' => 'required',
-            'carrito.*.cantidad' => 'required',
-            'carrito.*.tipo' => 'required|in:compra,alquiler',
-            'carrito.*.precio' => 'required',
-            'carrito.*.nombre' => 'required',
-            'precioTotal' => 'required',
-            'metodoPago' => 'required|in:visa,efectivo,otro'
-        ]);
-
-        if (Auth::check()) {
-            $user = Auth::user();
-        } else {
-            throw new Exception('Error, usuario no autenticado');
-        }
-
-        DB::beginTransaction();
-
         try {
+
+            $request->validate([
+                'carrito' => 'required|array',
+                'carrito.*.idObjeto' => 'required',
+                'carrito.*.cantidad' => 'required',
+                'carrito.*.tipo' => 'required|in:compra,alquiler',
+                'carrito.*.precio' => 'required',
+                'carrito.*.nombre' => 'required',
+                'precioTotal' => 'required',
+                'metodoPago' => 'required|in:visa,efectivo,otro'
+            ]);
+
+            if (Auth::check()) {
+                $user = Auth::user();
+            } else {
+                throw new Exception('Error, usuario no autenticado');
+            }
+
+            DB::beginTransaction();
 
             $carrito = $request->carrito;
             $precioTotal = $request->precioTotal;
@@ -52,8 +52,7 @@ class CarritoController extends Controller
 
                 $idCompra = DB::table('compras')->insertGetId([
                     'idCliente' => $user->id,
-                    'created_at' => now(),
-                    'updated_at' => now()
+                    'created_at' => now()
                 ]);
 
                 foreach ($carrito as $item) {
@@ -79,28 +78,38 @@ class CarritoController extends Controller
                 }
             }
 
-            if ($hayAlquileres) {
+        
+        if ($hayAlquileres) {
 
-                $idAlquiler = DB::table('alquileres')->insertGetId([
-                    'fechaInicio' => now()->toDateString(),
-                    'fechaFin' => now()->addMonth()->toDateString(),
-                    'idCliente' => $user->id,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+            $primerAlquiler = null;
 
-                foreach ($carrito as $item) {
+            foreach ($carrito as $item) {
 
-                    if ($item['tipo'] == 'alquiler') {
-
-                        DB::table('alquiler_objeto')->insert([
-                            'idAlquiler' => $idAlquiler,
-                            'idObjeto' => $item['idObjeto'],
-                            'cantidad' => $item['cantidad']
-                        ]);
-                    }
+                if ($item['tipo'] == 'alquiler') {
+                    $primerAlquiler = $item;
+                    break;
                 }
             }
+
+            $idAlquiler = DB::table('alquileres')->insertGetId([
+                'fechaInicio' => $primerAlquiler['fechaInicio'],
+                'fechaFin' => $primerAlquiler['fechaFin'],
+                'idCliente' => $user->id
+            ]);
+
+            foreach ($carrito as $item) {
+
+                if ($item['tipo'] == 'alquiler') {
+
+                    DB::table('alquiler_objeto')->insert([
+                        'idAlquiler' => $idAlquiler,
+                        'idObjeto' => $item['idObjeto'],
+                        'cantidad' => $item['cantidad']
+                    ]);
+                }
+            }
+        }
+
 
             foreach ($carrito as $item) {
 
@@ -120,22 +129,29 @@ class CarritoController extends Controller
             ]);
 
             if ($user->descuentoActivo == true) {
+
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update(['descuentoActivo' => false]);
+                    ->update([
+                        'descuentoActivo' => false
+                    ]);
             }
 
             if ($precioTotal > 25) {
+
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update(['puntosRacha' => $user->puntosRacha + 1]);
+                    ->update([
+                        'puntosRacha' => $user->puntosRacha + 1
+                    ]);
             }
-
-           
 
             DB::commit();
 
-            return $idFactura;
+            return response()->json([
+                'success' => true,
+                'idFactura' => $idFactura
+            ]);
 
         } catch (Exception $e) {
 
@@ -145,87 +161,108 @@ class CarritoController extends Controller
         }
     }
 
-    public function misFacturas()
+
+    public function misFacturas(Request $request)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-        } else {
-            throw new Exception('Error, usuario no autenticado');
+        try {
+
+            $usuario = auth()->user();
+
+            $facturas = DB::table('facturas')
+                ->where('idCliente', $usuario->id)
+                ->orderBy('fechaCreacion', 'desc')
+                ->get();
+
+            return response()->json($facturas);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'mensaje' => $e->getMessage()
+            ], 500);
         }
-
-        $facturas = DB::table('facturas')
-            ->where('idCliente', $user->id)
-            ->orderBy('fechaCreacion', 'desc')
-            ->get();
-
-        return $facturas;
     }
+
+
 
     public function detalles($id)
     {
+        try {
 
-        $factura = DB::table('facturas')
-            ->where('idFactura', $id)
-            ->first();
-
-        if (!$factura) {
-            throw new Exception('Factura no encontrada');
-        }
-
-        $items = [];
-
-        if ($factura->idCompra != null) {
-
-            $compras = DB::table('compra_objeto')
-                ->join('objetos', 'compra_objeto.idObjeto', '=', 'objetos.id')
-                ->where('compra_objeto.idCompra', $factura->idCompra)
-                ->select(
-                    'objetos.nombre',
-                    'compra_objeto.cantidad',
-                    'objetos.precio'
-                )
-                ->get();
-
-            foreach ($compras as $item) {
-
-                $items[] = [
-                    'nombre' => $item->nombre,
-                    'cantidad' => $item->cantidad,
-                    'precioPagado' => $item->precio,
-                    'tipo' => 'compra'
-                ];
-            }
-        }
-
-        if ($factura->idAlquiler != null) {
-
-            $alquiler = DB::table('alquileres')
-                ->where('idAlquiler', $factura->idAlquiler)
+            $factura = DB::table('facturas')
+                ->where('idFactura', $id)
                 ->first();
 
-            $alquileres = DB::table('alquiler_objeto')
-                ->join('objetos', 'alquiler_objeto.idObjeto', '=', 'objetos.id')
-                ->where('alquiler_objeto.idAlquiler', $factura->idAlquiler)
-                ->select(
-                    'objetos.nombre',
-                    'alquiler_objeto.cantidad',
-                    'objetos.precio'
-                )
-                ->get();
-
-            foreach ($alquileres as $item) {
-
-                $items[] = [
-                    'nombre' => $item->nombre,
-                    'cantidad' => $item->cantidad,
-                    'precioPagado' => $item->precio,
-                    'tipo' => 'alquiler',
-                    'fechaInicio' => $alquiler->fechaInicio,
-                    'fechaFin' => $alquiler->fechaFin
-                ];
+            if (!$factura) {
+                throw new Exception('Factura no encontrada');
             }
-        }
 
-        return $items;
+            $items = [];
+
+            if ($factura->idCompra != null) {
+
+                $compras = DB::table('compra_objeto')
+                    ->join('objetos', 'compra_objeto.idObjeto', '=', 'objetos.id')
+                    ->where('compra_objeto.idCompra', $factura->idCompra)
+                    ->select(
+                        'objetos.nombre',
+                        'compra_objeto.cantidad',
+                        'objetos.precio'
+                    )
+                    ->get();
+
+                foreach ($compras as $item) {
+
+                    $items[] = [
+                        'nombre' => $item->nombre,
+                        'cantidad' => $item->cantidad,
+                        'precioPagado' => $item->precio,
+                        'tipo' => 'compra'
+                    ];
+                }
+            }
+
+            if ($factura->idAlquiler != null) {
+
+                $alquiler = DB::table('alquileres')
+                    ->where('idAlquiler', $factura->idAlquiler)
+                    ->first();
+
+                $alquileres = DB::table('alquiler_objeto')
+                    ->join('objetos', 'alquiler_objeto.idObjeto', '=', 'objetos.id')
+                    ->where('alquiler_objeto.idAlquiler', $factura->idAlquiler)
+                    ->select(
+                        'objetos.nombre',
+                        'alquiler_objeto.cantidad',
+                        'objetos.precio'
+                    )
+                    ->get();
+
+                foreach ($alquileres as $item) {
+
+                    $items[] = [
+                        'nombre' => $item->nombre,
+                        'cantidad' => $item->cantidad,
+                        'precioPagado' => $item->precio,
+                        'tipo' => 'alquiler',
+                        'fechaInicio' => $alquiler->fechaInicio,
+                        'fechaFin' => $alquiler->fechaFin
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'items' => $items
+            ]);
+
+        } catch (\Throwable $th) {
+
+            return response()->json([
+                'success' => false,
+                'mensaje' => $th->getMessage()
+            ], 500);
+        }
     }
 }

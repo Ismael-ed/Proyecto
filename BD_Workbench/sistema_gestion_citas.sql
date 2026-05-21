@@ -38,7 +38,7 @@ CREATE TABLE `citas` (
   PRIMARY KEY (`id`),
   KEY `citas_ibfk_1` (`idCliente`),
   CONSTRAINT `citas_ibfk_1` FOREIGN KEY (`idCliente`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,6 +47,7 @@ CREATE TABLE `citas` (
 
 LOCK TABLES `citas` WRITE;
 /*!40000 ALTER TABLE `citas` DISABLE KEYS */;
+INSERT INTO `citas` VALUES (1,'pepe',0,NULL,'123444444','pepe@gmail.com','FJHF123','1','pepe','revision','2026-05-21 16:52:52','2026-05-21 18:44:57'),(2,'Admin',0,1,'123123123','admin@gmail.com','JHFG854','21','asds','cambio de liquidos','2026-05-21 16:53:30','2026-05-21 16:53:50');
 /*!40000 ALTER TABLE `citas` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -59,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-21 19:46:08
+-- Dump completed on 2026-05-21 22:51:59

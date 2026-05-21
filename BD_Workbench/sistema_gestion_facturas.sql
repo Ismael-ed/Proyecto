@@ -32,13 +32,13 @@ CREATE TABLE `facturas` (
   `listaObjetos` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `idCliente` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`idFactura`),
   UNIQUE KEY `idCompra` (`idCompra`),
   UNIQUE KEY `idAlquiler` (`idAlquiler`),
   CONSTRAINT `facturas_ibfk_1` FOREIGN KEY (`idCompra`) REFERENCES `compras` (`idCompra`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `facturas_ibfk_2` FOREIGN KEY (`idAlquiler`) REFERENCES `alquileres` (`idAlquiler`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `chk_factura_unica` CHECK (`idCompra` is not null and `idAlquiler` is null or `idCompra` is null and `idAlquiler` is not null)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  CONSTRAINT `facturas_ibfk_2` FOREIGN KEY (`idAlquiler`) REFERENCES `alquileres` (`idAlquiler`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-21 19:46:07
+-- Dump completed on 2026-05-21 22:52:00
