@@ -1,0 +1,48 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+main {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+.container-cita {
+    background-color: var(--verde-claro);
+    padding: 50px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#formCita h1 { 
+    font: var(--titulo); 
+}
+
+#formCita h2 { 
+    font: var(--subtitulo-2); 
+}
+
+#formCita label { 
+    font: var(--subtitulo-3); 
+
+}
+#formCita input, #formCita select, #formCita textarea { 
+    font: var(--parrafo); 
+    border-radius: 0;
+}
+
+#btnEnviarCita {
+    font: var(--boton);
+    font-weight: bold;
+}
