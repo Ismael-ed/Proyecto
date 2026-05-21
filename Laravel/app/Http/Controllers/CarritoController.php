@@ -2,157 +2,222 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class CarritoController extends Controller
 {
     public function finalizar(Request $request)
     {
-        try {
-            DB::beginTransaction();
+        $request->validate([
+            'carrito' => 'required|array',
+            'carrito.*.idObjeto' => 'required',
+            'carrito.*.cantidad' => 'required',
+            'carrito.*.tipo' => 'required|in:compra,alquiler',
+            'carrito.*.precio' => 'required',
+            'carrito.*.nombre' => 'required',
+            'precioTotal' => 'required',
+            'metodoPago' => 'required|in:visa,efectivo,otro'
+        ]);
 
+        if (Auth::check()) {
             $user = Auth::user();
-            if (!$user) {
-                return response()->json(['error' => 'No auth'], 401);
+        } else {
+            throw new Exception('Error, usuario no autenticado');
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            $carrito = $request->carrito;
+            $precioTotal = $request->precioTotal;
+            $metodoPago = $request->metodoPago;
+
+            $listaObjetos = '';
+
+            $hayCompras = false;
+            $idCompra = null;
+
+            foreach ($carrito as $item) {
+
+                if ($item['tipo'] == 'compra') {
+                    $hayCompras = true;
+                }
             }
 
-            $carrito = $request->input('carrito');
-            $metodoPago = $request->input('metodoPago', 'efectivo');
+            if ($hayCompras) {
 
-            $itemsCompra = array_filter($carrito, fn($i) => $i['tipo'] === 'compra');
-            $itemsAlquiler = array_filter($carrito, fn($i) => $i['tipo'] === 'alquiler');
-
-            if (!empty($itemsCompra)) {
                 $idCompra = DB::table('compras')->insertGetId([
                     'idCliente' => $user->id,
-                    'created_at' => now()
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
 
-                foreach ($itemsCompra as $item) {
-                    DB::table('compra_objeto')->insert([
-                        'idCompra' => $idCompra,
-                        'idObjeto' => $item['idObjeto'],
-                        'cantidad' => $item['cantidad']
-                    ]);
+                foreach ($carrito as $item) {
+
+                    if ($item['tipo'] == 'compra') {
+
+                        DB::table('compra_objeto')->insert([
+                            'idCompra' => $idCompra,
+                            'idObjeto' => $item['idObjeto'],
+                            'cantidad' => $item['cantidad']
+                        ]);
+                    }
                 }
-
-                $subtotalCompra = array_reduce($itemsCompra, fn($acc, $item) => $acc + ($item['precio'] * $item['cantidad']), 0);
-                
-                DB::table('facturas')->insert([
-                    'fechaCreacion' => now()->format('Y-m-d'),
-                    'precioTotal'   => $subtotalCompra,
-                    'idCompra'      => $idCompra,
-                    'idAlquiler'    => null,
-                    'metodoPago'    => in_array($metodoPago, ['visa', 'efectivo', 'otro']) ? $metodoPago : 'efectivo',
-                    'listaObjetos'  => implode(', ', array_column($itemsCompra, 'nombre')),
-                    'created_at'    => now(),
-                    'updated_at'    => now()
-                ]);
             }
 
-            if (!empty($itemsAlquiler)) {
-                $fechasFin = array_column($itemsAlquiler, 'fechaFin');
-                $maxFechaFin = !empty($fechasFin) ? max($fechasFin) : now()->addMonth()->format('Y-m-d');
+            $hayAlquileres = false;
+            $idAlquiler = null;
+
+            foreach ($carrito as $item) {
+
+                if ($item['tipo'] == 'alquiler') {
+                    $hayAlquileres = true;
+                }
+            }
+
+            if ($hayAlquileres) {
 
                 $idAlquiler = DB::table('alquileres')->insertGetId([
-                    'fechaInicio' => now()->format('Y-m-d'),
-                    'fechaFin'    => $maxFechaFin,
-                    'idCliente'   => $user->id,
-                    'created_at'  => now(),
-                    'updated_at'  => now()
+                    'fechaInicio' => now()->toDateString(),
+                    'fechaFin' => now()->addMonth()->toDateString(),
+                    'idCliente' => $user->id,
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ]);
 
-                foreach ($itemsAlquiler as $item) {
-                    DB::table('alquiler_objeto')->insert([
-                        'idAlquiler' => $idAlquiler,
-                        'idObjeto'   => $item['idObjeto'],
-                        'cantidad'   => $item['cantidad']
-                    ]);
+                foreach ($carrito as $item) {
+
+                    if ($item['tipo'] == 'alquiler') {
+
+                        DB::table('alquiler_objeto')->insert([
+                            'idAlquiler' => $idAlquiler,
+                            'idObjeto' => $item['idObjeto'],
+                            'cantidad' => $item['cantidad']
+                        ]);
+                    }
                 }
-
-                $totalAlquilerCalculado = array_reduce($itemsAlquiler, fn($acc, $item) => $acc + ($item['precio'] * $item['cantidad']), 0);
-
-                DB::table('facturas')->insert([
-                    'fechaCreacion' => now()->format('Y-m-d'),
-                    'precioTotal'   => $totalAlquilerCalculado,
-                    'idCompra'      => null,
-                    'idAlquiler'    => $idAlquiler,
-                    'metodoPago'    => in_array($metodoPago, ['visa', 'efectivo', 'otro']) ? $metodoPago : 'efectivo',
-                    'listaObjetos'  => implode(', ', array_column($itemsAlquiler, 'nombre')),
-                    'created_at'    => now(),
-                    'updated_at'    => now()
-                ]);
             }
 
-            DB::table('users')->where('id', $user->id)->increment('puntosRacha');
+            foreach ($carrito as $item) {
+
+                $listaObjetos .= $item['nombre'] . ', ';
+            }
+
+            $idFactura = DB::table('facturas')->insertGetId([
+                'fechaCreacion' => now()->toDateString(),
+                'precioTotal' => $precioTotal,
+                'idCompra' => $idCompra,
+                'idAlquiler' => $idAlquiler,
+                'metodoPago' => $metodoPago,
+                'listaObjetos' => $listaObjetos,
+                'idCliente' => $user->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::table('users')
+                ->where('id', $user->id)
+                ->update([
+                    'puntosRacha' => $user->puntosRacha + 1
+                ]);
 
             DB::commit();
-            return response()->json(['mensaje' => 'Exito'], 200);
 
-        } catch (\Exception $e) {
+            return $idFactura;
+
+        } catch (Exception $e) {
+
             DB::rollBack();
-            Log::error($e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
+
+            throw new Exception('Ha ocurrido un error');
         }
     }
 
     public function misFacturas()
     {
-        $user = Auth::user();
-        if (!$user) return response()->json(['error' => 'No auth'], 401);
+        if (Auth::check()) {
+            $user = Auth::user();
+        } else {
+            throw new Exception('Error, usuario no autenticado');
+        }
 
         $facturas = DB::table('facturas')
-            ->whereIn('idCompra', function($q) use ($user) {
-                $q->select('idCompra')->from('compras')->where('idCliente', $user->id);
-            })
-            ->orWhereIn('idAlquiler', function($q) use ($user) {
-                $q->select('idAlquiler')->from('alquileres')->where('idCliente', $user->id);
-            })
+            ->where('idCliente', $user->id)
             ->orderBy('fechaCreacion', 'desc')
             ->get();
 
-        return response()->json($facturas);
+        return $facturas;
     }
 
-public function detalles($id)
-{
-    $factura = \DB::table('facturas')->where('idFactura', $id)->first();
-    
-    if (!$factura) return response()->json(['error' => 'No existe'], 404);
+    public function detalles($id)
+    {
 
-    $items = [];
-    
-    $selectCampos = [
-        'objetos.nombre', 
-        \DB::raw('objetos.precio as precio_original'),
-        \DB::raw('CASE WHEN objetos.descuento > 0 
-                 THEN objetos.precio * (1 - (objetos.descuento / 100)) 
-                 ELSE objetos.precio END as precio')
-    ];
+        $factura = DB::table('facturas')
+            ->where('idFactura', $id)
+            ->first();
 
-    if ($factura->idCompra) {
-        $items = \DB::table('compra_objeto')
-            ->join('objetos', 'compra_objeto.idObjeto', '=', 'objetos.id')
-            ->where('idCompra', $factura->idCompra)
-            ->select(array_merge($selectCampos, ['compra_objeto.cantidad']))
-            ->get();
-    } else if ($factura->idAlquiler) {
-        $items = \DB::table('alquiler_objeto')
-            ->join('objetos', 'alquiler_objeto.idObjeto', '=', 'objetos.id')
-            ->where('idAlquiler', $factura->idAlquiler)
-            ->select(array_merge($selectCampos, ['alquiler_objeto.cantidad']))
-            ->get();
+        if (!$factura) {
+            throw new Exception('Factura no encontrada');
+        }
+
+        $items = [];
+
+        if ($factura->idCompra != null) {
+
+            $compras = DB::table('compra_objeto')
+                ->join('objetos', 'compra_objeto.idObjeto', '=', 'objetos.id')
+                ->where('compra_objeto.idCompra', $factura->idCompra)
+                ->select(
+                    'objetos.nombre',
+                    'compra_objeto.cantidad',
+                    'objetos.precio'
+                )
+                ->get();
+
+            foreach ($compras as $item) {
+
+                $items[] = [
+                    'nombre' => $item->nombre,
+                    'cantidad' => $item->cantidad,
+                    'precioPagado' => $item->precio,
+                    'tipo' => 'compra'
+                ];
+            }
+        }
+
+        if ($factura->idAlquiler != null) {
+
+            $alquiler = DB::table('alquileres')
+                ->where('idAlquiler', $factura->idAlquiler)
+                ->first();
+
+            $alquileres = DB::table('alquiler_objeto')
+                ->join('objetos', 'alquiler_objeto.idObjeto', '=', 'objetos.id')
+                ->where('alquiler_objeto.idAlquiler', $factura->idAlquiler)
+                ->select(
+                    'objetos.nombre',
+                    'alquiler_objeto.cantidad',
+                    'objetos.precio'
+                )
+                ->get();
+
+            foreach ($alquileres as $item) {
+
+                $items[] = [
+                    'nombre' => $item->nombre,
+                    'cantidad' => $item->cantidad,
+                    'precioPagado' => $item->precio,
+                    'tipo' => 'alquiler',
+                    'fechaInicio' => $alquiler->fechaInicio,
+                    'fechaFin' => $alquiler->fechaFin
+                ];
+            }
+        }
+
+        return $items;
     }
-
-    return response()->json(['factura' => $factura, 'items' => $items]);
-}
-
-    public function index() { return response()->json([]); }
-    public function store(Request $request) { return response()->json([]); }
-    public function show($id) { return response()->json([]); }
-    public function update(Request $request, $id) { return response()->json([]); }
-    public function destroy($id) { return response()->json([]); }
 }

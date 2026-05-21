@@ -12,20 +12,20 @@ class CitaController extends Controller
 {
     public function index()
     {
-        return response()->json(Cita::all());
+        return Cita::all();
     }
 
     public function store(Request $request)
     {
         try {
             $request->validate([
-                'nombre' => 'required|string|max:100',
-                'telefono' => 'required|string|max:20',
-                'correo' => 'required|email|max:150',
-                'numMatricula' => 'required|string|max:50',
-                'numIdC' => 'required|string|max:50',
+                'nombre' => 'required',
+                'telefono' => 'required',
+                'correo' => 'required',
+                'numMatricula' => 'required',
+                'numIdC' => 'required',
                 'tipoConsulta' => 'required|in:cambio de liquidos,cambio de ruedas,revision,otros',
-                'informacionAdicional' => 'nullable|string|max:255',
+                'informacionAdicional' => 'nullable',
                 'idCliente' => 'nullable|exists:users,id'
             ]);
 
@@ -44,16 +44,16 @@ class CitaController extends Controller
             $cita->idCliente = $request->idCliente;
 
             if ($cita->save()) {
-                return response()->json($cita, 201);
+                return $cita;
             }
         } catch (\Throwable $th) {
-            return response()->json(['mensaje' => $th->getMessage()], 500);
+            return response(['mensaje' => $th->getMessage()], 500);
         }
     }
 
     public function show(Cita $cita)
     {
-        return response()->json($cita);
+        return $cita;
     }
 
     public function update(Request $request, Cita $cita)
@@ -82,25 +82,14 @@ class CitaController extends Controller
             }
 
             if ($cita->save()) {
-                return response()->json(['mensaje' => 'Cita actualizada'], 200);
+                return $cita;
+            }else{
+                throw new Exception('Error al actualizar la cita');
             }
 
-            throw new Exception('Error al actualizar la cita');
-
         } catch (\Throwable $th) {
-            return response()->json(['mensaje' => $th->getMessage()], 500);
+            return response(['mensaje' => $th->getMessage()], 500);
         }
     }
 
-    public function destroy(Cita $cita)
-    {
-        try {
-            if ($cita->delete()) {
-                return response()->json(['mensaje' => 'Cita eliminada correctamente']);
-            }
-            return response()->json(['mensaje' => 'No se pudo eliminar'], 400);
-        } catch (\Throwable $th) {
-            return response()->json(['mensaje' => $th->getMessage()], 500);
-        }
-    }
 }

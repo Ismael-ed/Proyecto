@@ -4,10 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ObjetoController;
-use App\Http\Controllers\AlquilerController;
 use App\Http\Controllers\CarritoController;
 use App\Http\Controllers\CitaController;
-use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\UserController;
 
 Route::controller(LoginController::class)->group(function () {
@@ -26,10 +24,11 @@ Route::apiResource('citas', CitaController::class);
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('usuario', UserController::class);
     Route::apiResource('objetos', ObjetoController::class);
-    Route::apiResource('alquileres', AlquilerController::class);
-    Route::apiResource('compras', ComprasController::class);
-    Route::apiResource('carrito', CarritoController::class);
-    Route::post('/carrito/finalizar', [CarritoController::class, 'finalizar']);
-    Route::get('/facturas/mis-facturas', [CarritoController::class, 'misFacturas']);
-    Route::get('/facturas/detalles/{id}', [CarritoController::class, 'detalles']);
+
+    Route::controller(CarritoController::class)->group(function () {
+        Route::post('carrito/finalizar', 'finalizar');
+        Route::get('facturas/mis-facturas', 'misFacturas');
+        Route::get('facturas/detalles/{id}', 'detalles');
+    });
+
 });

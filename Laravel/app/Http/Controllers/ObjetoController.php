@@ -41,10 +41,10 @@ class ObjetoController extends Controller
             $objeto->descuento = $request->descuento;
 
             if ($request->hasFile('imagen')) {
-
-                $fichImgs = $request->file('imagen')->store('imgs', 'public');
-
-                $objeto->imagen = $fichImgs;
+                $ruta = $request->file('imagen')->store('imgs', 'public');
+                $objeto->imagen = $ruta;
+            } else {
+                $objeto->imagen = 'imgs/default.png';
             }
             
             if ($objeto->save()) {
@@ -77,24 +77,39 @@ class ObjetoController extends Controller
                 'descuento' => 'nullable'
             ]);
 
-            if ($request->has('nombre')) $objeto->nombre = $request->nombre;
+            if ($request->has('nombre')){
+                $objeto->nombre = $request->nombre; 
+            } 
             if ($request->hasFile('imagen')) {
 
-                if ($objeto->imagen && Storage::disk('public')->exists($objeto->imagen)) {
+                if ($objeto->imagen && $objeto->imagen !== 'imgs/default.png' && Storage::disk('public')->exists($objeto->imagen)) {
                     Storage::disk('public')->delete($objeto->imagen);
                 }
 
-                $ruta = $request->file('imagen')->store('objetos', 'public');
-
+                $ruta = $request->file('imagen')->store('imgs', 'public');
                 $objeto->imagen = $ruta;
             }
-            if ($request->has('tipo')) $objeto->tipo = $request->tipo;
-            if ($request->has('cantidad')) $objeto->cantidad = $request->cantidad;
-            if ($request->has('estado')) $objeto->estado = $request->estado;
-            if ($request->has('precio')) $objeto->precio = $request->precio;
-            if ($request->has('calificacion')) $objeto->calificacion = $request->calificacion;
-            if ($request->has('detalles')) $objeto->detalles = $request->detalles;
-            if ($request->has('descuento')) $objeto->descuento = $request->descuento;
+            if ($request->has('tipo')){
+                $objeto->tipo = $request->tipo;  
+            } 
+            if ($request->has('cantidad')){
+                $objeto->cantidad = $request->cantidad;  
+            } 
+            if ($request->has('estado')) {
+                $objeto->estado = $request->estado;
+            }
+            if ($request->has('precio')){
+                $objeto->precio = $request->precio;
+            }
+            if ($request->has('calificacion')){
+                $objeto->calificacion = $request->calificacion;
+            } 
+            if ($request->has('detalles')){
+                $objeto->detalles = $request->detalles;
+            } 
+            if ($request->has('descuento')){
+                $objeto->descuento = $request->descuento;
+            } 
             
             if ($objeto->save()) {
                 return $objeto;
