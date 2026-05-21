@@ -236,8 +236,7 @@ async function guardarDatosPerfil(event) {
         localStorage.setItem('usuario', JSON.stringify(res.data));
         window.location.reload();
     } catch (e) {
-        console.error(e.response?.data);
-        alert("Error al actualizar");
+        console.error(e);
     }
 }
 
