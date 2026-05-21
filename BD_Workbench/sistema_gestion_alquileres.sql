@@ -27,8 +27,6 @@ CREATE TABLE `alquileres` (
   `fechaInicio` date NOT NULL,
   `fechaFin` date NOT NULL,
   `idCliente` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`idAlquiler`),
   KEY `idCliente` (`idCliente`),
   CONSTRAINT `alquileres_ibfk_1` FOREIGN KEY (`idCliente`) REFERENCES `users` (`id`) ON UPDATE CASCADE
@@ -53,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-19 21:33:29
+-- Dump completed on 2026-05-21 19:46:08
