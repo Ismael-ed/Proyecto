@@ -319,149 +319,278 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // funcion para añadir al carrito (localStorage)
 function añadirAlCarrito(producto, tipo) {
+
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    const itemIndex = carrito.findIndex(i => i.idObjeto === producto.id && i.tipo === tipo);
+
+    const itemIndex = carrito.findIndex(
+        i => i.idObjeto === producto.id && i.tipo === tipo
+    );
 
     let precioOriginal = parseFloat(producto.precio);
+
     let porcentajeDescuento = producto.descuento || 0;
+
     let precioConDescuento = precioOriginal;
 
     if (porcentajeDescuento > 0) {
+
         precioConDescuento = precioOriginal * (1 - (porcentajeDescuento / 100));
     }
 
     if (itemIndex > -1) {
+
         carrito[itemIndex].cantidad += 1;
-        
+
         if (tipo === 'alquiler') {
+
             const fInicio = new Date();
+
             const fFin = new Date();
-            fFin.setMonth(fInicio.getMonth() + carrito[itemIndex].cantidad);
-            carrito[itemIndex].fechaInicio = fInicio.toISOString().split('T')[0];
-            carrito[itemIndex].fechaFin = fFin.toISOString().split('T')[0];
+
+            fFin.setMonth(
+                fInicio.getMonth() + carrito[itemIndex].cantidad
+            );
+
+            carrito[itemIndex].fechaInicio =fInicio.toISOString().split('T')[0];
+
+            carrito[itemIndex].fechaFin =fFin.toISOString().split('T')[0];
         }
+
     } else {
+
         let objetoCarrito = {
             idObjeto: producto.id,
             nombre: producto.nombre,
             precio: precioConDescuento,
-            precioOriginal: precioOriginal, 
+            precioOriginal: precioOriginal,
             descuento: porcentajeDescuento,
             tipo: tipo,
             cantidad: 1
         };
 
         if (tipo === 'alquiler') {
+
             const fInicio = new Date();
+
             const fFin = new Date();
+
             fFin.setMonth(fInicio.getMonth() + 1);
-            objetoCarrito.fechaInicio = fInicio.toISOString().split('T')[0];
-            objetoCarrito.fechaFin = fFin.toISOString().split('T')[0];
+
+            objetoCarrito.fechaInicio =
+                fInicio.toISOString().split('T')[0];
+
+            objetoCarrito.fechaFin =
+                fFin.toISOString().split('T')[0];
         }
 
         carrito.push(objetoCarrito);
     }
-    localStorage.setItem('carrito', JSON.stringify(carrito));
+
+    localStorage.setItem(
+        'carrito',
+        JSON.stringify(carrito)
+    );
 }
 
 // funcion para renderizar la lista del carrito
 function renderizarCarrito() {
+
     const lista = document.getElementById('lista-productos-carrito');
+
     const subtotalElem = document.getElementById('subtotal-precio');
+
     const totalElem = document.getElementById('total-final');
+
     if (!lista) return;
 
-    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+    let carrito =
+        JSON.parse(localStorage.getItem('carrito')) || [];
+
     lista.innerHTML = "";
+
     let subtotal = 0;
 
     carrito.forEach((item, index) => {
+
         subtotal += item.precio * item.cantidad;
+
         const div = document.createElement('div');
-        div.className = "item-carrito d-flex justify-content-between align-items-center mb-2 p-2 border-bottom";
-        
+
+        div.className =
+            "item-carrito d-flex justify-content-between align-items-center mb-2 p-2 border-bottom";
+
         let detalleAlquiler = "";
+
         if (item.tipo === 'alquiler') {
+
             detalleAlquiler = `
                 <div class="small text-muted">
-                    Meses: <input type="number" value="${item.cantidad}" min="1" style="width:50px" onchange="actualizarMeses(${index}, this.value)">
-                    <br>Fin: ${item.fechaFin}
-                </div>`;
+                    Meses:
+                    <input
+                        type="number"
+                        value="${item.cantidad}"
+                        min="1"
+                        style="width:50px"
+                        onchange="actualizarMeses(${index}, this.value)"
+                    >
+
+                    <br>
+
+                    Inicio: ${item.fechaInicio}
+
+                    <br>
+
+                    Fin: ${item.fechaFin}
+                </div>
+            `;
         }
 
         div.innerHTML = `
             <div>
-                <strong>${item.nombre}</strong> (${item.tipo})<br>
-                <span>${item.precio}€ ${item.tipo === 'alquiler' ? 'al mes' : 'x ' + item.cantidad}</span>
+
+                <strong>${item.nombre}</strong>
+
+                (${item.tipo})
+
+                <br>
+
+                <span>
+                    ${item.precio}€
+                    ${item.tipo === 'alquiler'
+                        ? 'al mes'
+                        : 'x ' + item.cantidad}
+                </span>
+
                 ${detalleAlquiler}
+
             </div>
-            <button class="btn btn-sm btn-danger" onclick="eliminarDelCarrito(${index})">Eliminar</button>
+
+            <button
+                class="btn btn-sm btn-danger"
+                onclick="eliminarDelCarrito(${index})">
+
+                Eliminar
+
+            </button>
         `;
+
         lista.appendChild(div);
     });
 
-    if(subtotalElem) subtotalElem.innerText = subtotal.toFixed(2) + "€";
-    if(totalElem) totalElem.innerText = subtotal.toFixed(2) + "€";
+    if (subtotalElem) {
+        subtotalElem.innerText = subtotal.toFixed(2) + "€";
+    }
+
+    if (totalElem) {
+        totalElem.innerText = subtotal.toFixed(2) + "€";
+    }
 
     const btnVaciar = document.getElementById('btnVaciarCarrito');
-    if (btnVaciar) btnVaciar.onclick = () => {
-        localStorage.removeItem('carrito');
-        renderizarCarrito();
-    };
+
+    if (btnVaciar) {
+
+        btnVaciar.onclick = () => {
+
+            localStorage.removeItem('carrito');
+
+            renderizarCarrito();
+        };
+    }
 
     const btnFinalizar = document.getElementById('btnFinalizarCompra');
-    if (btnFinalizar) btnFinalizar.onclick = finalizarCompra;
+
+    if (btnFinalizar) {
+
+        btnFinalizar.onclick = finalizarCompra;
+    }
 }
 
 // Función para actualizar meses de alquiler
 window.actualizarMeses = function(index, valor) {
-    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+    let carrito =JSON.parse(localStorage.getItem('carrito')) || [];
+
     let meses = parseInt(valor);
+
     if (meses < 1) meses = 1;
 
     if (carrito[index].tipo === 'alquiler') {
+
         carrito[index].cantidad = meses;
+
         const fInicio = new Date();
+
         const fFin = new Date();
+
         fFin.setMonth(fInicio.getMonth() + meses);
+
         carrito[index].fechaInicio = fInicio.toISOString().split('T')[0];
+
         carrito[index].fechaFin = fFin.toISOString().split('T')[0];
     }
 
-    localStorage.setItem('carrito', JSON.stringify(carrito));
+    localStorage.setItem('carrito',JSON.stringify(carrito));
+
     renderizarCarrito();
 }
 
 // funcion para eliminar un producto del carrito
-window.eliminarDelCarrito = function (index) {
-    let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+window.eliminarDelCarrito = function(index) {
+
+    let carrito =JSON.parse(localStorage.getItem('carrito')) || [];
+
     carrito.splice(index, 1);
-    localStorage.setItem('carrito', JSON.stringify(carrito));
+
+    localStorage.setItem('carrito',JSON.stringify(carrito));  
+
     renderizarCarrito();
 }
 
 // funcion para finalizar compra enviando al backend
 async function finalizarCompra() {
+
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
     if (carrito.length === 0) return;
 
-    const totalStr = document.getElementById('total-final').innerText;
-    const totalNum = parseFloat(totalStr.replace('€', ''));
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        alert("Debes iniciar sesión");
+        return;
+    }
+
+    const totalStr =
+        document.getElementById('total-final').innerText;
+
+    const totalNum = parseFloat(
+        totalStr.replace('€', '')
+    );
 
     const payload = {
         carrito: carrito,
         precioTotal: totalNum,
-        usoDescuentoActivo: false,
         metodoPago: 'efectivo'
     };
 
     try {
-        await axios.post(`${URL_API}/carrito/finalizar`, payload, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+
+        await axios.post(
+            `${URL_API}/carrito/finalizar`,
+            payload,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
         localStorage.removeItem('carrito');
+
         window.location.href = "index.html";
+
     } catch (e) {
+
         console.error(e);
     }
 }
