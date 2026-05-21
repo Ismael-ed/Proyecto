@@ -119,11 +119,19 @@ class CarritoController extends Controller
                 'updated_at' => now()
             ]);
 
-            DB::table('users')
-                ->where('id', $user->id)
-                ->update([
-                    'puntosRacha' => $user->puntosRacha + 1
-                ]);
+            if ($user->descuentoActivo == true) {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['descuentoActivo' => false]);
+            }
+
+            if ($precioTotal > 25) {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['puntosRacha' => $user->puntosRacha + 1]);
+            }
+
+           
 
             DB::commit();
 
