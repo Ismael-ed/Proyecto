@@ -176,146 +176,146 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     //funcion para guardar datos del perfil
-async function cargarDatosPerfil() {
-    const localUser = JSON.parse(localStorage.getItem('usuario'));
-    if (!localUser) return;
+    async function cargarDatosPerfil() {
+        const localUser = JSON.parse(localStorage.getItem('usuario'));
+        if (!localUser) return;
 
-    document.getElementById('nombre').value = localUser.nombre || '';
-    document.getElementById('email').value = localUser.email || '';
-    document.getElementById('telefono').value = localUser.telefono || '';
-    document.getElementById('display-id').textContent = `#${localUser.id}`;
+        document.getElementById('nombre').value = localUser.nombre || '';
+        document.getElementById('email').value = localUser.email || '';
+        document.getElementById('telefono').value = localUser.telefono || '';
+        document.getElementById('display-id').textContent = `#${localUser.id}`;
 
-    const puntos = localUser.puntosRacha || 0;
-    const contenedor = document.getElementById('contenedor-racha');
-    
-    if (contenedor) {
-        const circulos = contenedor.querySelectorAll('i');
-        circulos.forEach((circulo, index) => {
-            if (index < puntos) {
-                circulo.classList.remove('bi-circle');
-                circulo.classList.add('bi-circle-fill');
-            } else {
-                circulo.classList.remove('bi-circle-fill');
-                circulo.classList.add('bi-circle');
-            }
-        });
+        const puntos = localUser.puntosRacha || 0;
+        const contenedor = document.getElementById('contenedor-racha');
+        
+        if (contenedor) {
+            const circulos = contenedor.querySelectorAll('i');
+            circulos.forEach((circulo, index) => {
+                if (index < puntos) {
+                    circulo.classList.remove('bi-circle');
+                    circulo.classList.add('bi-circle-fill');
+                } else {
+                    circulo.classList.remove('bi-circle-fill');
+                    circulo.classList.add('bi-circle');
+                }
+            });
+        }
+
+        const statusCaja = document.getElementById('status-descuento');
+        const descTexto = document.getElementById('descuento-texto');
+        const descIcono = document.getElementById('descuento-icono');
+
+        if (localUser.descuentoActivo == 1) {
+            if (statusCaja) statusCaja.classList.add('activo');
+            if (descTexto) descTexto.textContent = "DESCUENTO DISPONIBLE";
+            if (descIcono) descIcono.textContent = "redeem";
+        } else {
+            if (statusCaja) statusCaja.classList.remove('activo');
+            if (descTexto) descTexto.textContent = "SIN DESCUENTO ACTIVO";
+            if (descIcono) descIcono.textContent = "lock";
+        }
     }
 
-    const statusCaja = document.getElementById('status-descuento');
-    const descTexto = document.getElementById('descuento-texto');
-    const descIcono = document.getElementById('descuento-icono');
+    async function guardarDatosPerfil(event) {
+        if (event) event.preventDefault();
 
-    if (localUser.descuentoActivo == 1) {
-        if (statusCaja) statusCaja.classList.add('activo');
-        if (descTexto) descTexto.textContent = "DESCUENTO DISPONIBLE";
-        if (descIcono) descIcono.textContent = "redeem";
-    } else {
-        if (statusCaja) statusCaja.classList.remove('activo');
-        if (descTexto) descTexto.textContent = "SIN DESCUENTO ACTIVO";
-        if (descIcono) descIcono.textContent = "lock";
-    }
-}
+        const localUser = JSON.parse(localStorage.getItem('usuario'));
+        const token = localStorage.getItem('token');
 
-async function guardarDatosPerfil(event) {
-    if (event) event.preventDefault();
+        const datosParaEnviar = {
+            nombre: document.getElementById('nombre').value,
+            telefono: document.getElementById('telefono').value,
+            tipoUsuario: localUser.tipoUsuario
+        };
 
-    const localUser = JSON.parse(localStorage.getItem('usuario'));
-    const token = localStorage.getItem('token');
+        try {
+            const res = await axios.put(`${URL_API}/usuario/${localUser.id}`, datosParaEnviar, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-    const datosParaEnviar = {
-        nombre: document.getElementById('nombre').value,
-        telefono: document.getElementById('telefono').value,
-        tipoUsuario: localUser.tipoUsuario
-    };
-
-    try {
-        const res = await axios.put(`${URL_API}/usuario/${localUser.id}`, datosParaEnviar, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        localStorage.setItem('usuario', JSON.stringify(res.data));
-        window.location.reload();
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('formCuenta');
-    if (form) {
-        form.addEventListener('submit', guardarDatosPerfil);
-    }
-    cargarDatosPerfil(); 
-});
-
-// funcion para cargar productos
-async function cargarProductos() {
-    const ruta = window.location.pathname;
-    let tipo = null;
-    let contenedor = null;
-
-    if (ruta.includes("tienda.html")) {
-        tipo = "compra";
-        contenedor = document.getElementById("contenedor-tienda");
-    } else if (ruta.includes("alquiler.html")) {
-        tipo = "alquiler";
-        contenedor = document.getElementById("contenedor-alquiler");
+            localStorage.setItem('usuario', JSON.stringify(res.data));
+            window.location.reload();
+        } catch (e) {
+            console.error(e);
+        }
     }
 
-    if (!tipo || !contenedor) return;
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('formCuenta');
+        if (form) {
+            form.addEventListener('submit', guardarDatosPerfil);
+        }
+        cargarDatosPerfil(); 
+    });
 
-    try {
-        const res = await axios.get(`${URL_API}/objetos`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+    // funcion para cargar productos
+    async function cargarProductos() {
+        const ruta = window.location.pathname;
+        let tipo = null;
+        let contenedor = null;
 
-        const productos = res.data.filter(p => p.tipo.toLowerCase() === tipo);
-        contenedor.innerHTML = "";
-        const grid = document.createElement("div");
-        grid.classList.add("grid-productos");
+        if (ruta.includes("tienda.html")) {
+            tipo = "compra";
+            contenedor = document.getElementById("contenedor-tienda");
+        } else if (ruta.includes("alquiler.html")) {
+            tipo = "alquiler";
+            contenedor = document.getElementById("contenedor-alquiler");
+        }
 
-        productos.forEach(producto => {
-            const tarjeta = document.createElement("div");
-            tarjeta.classList.add("card-producto");
+        if (!tipo || !contenedor) return;
 
-            let claseEstado = "estado-disponible";
-            const estadoTexto = producto.estado ? producto.estado.toLowerCase() : 'disponible';
+        try {
+            const res = await axios.get(`${URL_API}/objetos`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
 
-            if (tipo === "alquiler") {
-                if (estadoTexto === "mantenimiento") claseEstado = "estado-mantenimiento";
-                if (estadoTexto === "ocupado") claseEstado = "estado-ocupado";
-            }
+            const productos = res.data.filter(p => p.tipo.toLowerCase() === tipo);
+            contenedor.innerHTML = "";
+            const grid = document.createElement("div");
+            grid.classList.add("grid-productos");
 
-            let imagen = producto.imagen ? `http://localhost:8000/storage/${producto.imagen}` : "img/sinimagen.png";
-            const badgeDescuento = (producto.descuento && producto.descuento > 0) ? `<span class="badge-descuento">-${producto.descuento}%</span>` : "";
+            productos.forEach(producto => {
+                const tarjeta = document.createElement("div");
+                tarjeta.classList.add("card-producto");
 
-            tarjeta.style.position = "relative";
-            tarjeta.innerHTML = `
-                ${badgeDescuento}
-                <img src="${imagen}" alt="${producto.nombre}" class="imagen-producto" onerror="this.src='img/sinimagen.png'">
-                <div class="contenido-producto">
-                    <h2>${producto.nombre}</h2>
-                    <p class="precio">${producto.precio}€</p>
-                    <p class="status-badge ${claseEstado}">${producto.estado ?? 'Disponible'}</p>
-                    <p class="calificacion">★ ${producto.calificacion ?? '0'}/5</p>
-                </div>
-                <button class="btn-producto" ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'disabled style="background: #ccc; cursor: not-allowed;"' : ''}>
-                    ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'No disponible' : 'Añadir al carrito'}
-                </button>
-            `;
+                let claseEstado = "estado-disponible";
+                const estadoTexto = producto.estado ? producto.estado.toLowerCase() : 'disponible';
 
-            const btnAccion = tarjeta.querySelector('.btn-producto');
-            if (btnAccion && !btnAccion.disabled) {
-                btnAccion.onclick = () => añadirAlCarrito(producto, tipo);
-            }
+                if (tipo === "alquiler") {
+                    if (estadoTexto === "mantenimiento") claseEstado = "estado-mantenimiento";
+                    if (estadoTexto === "ocupado") claseEstado = "estado-ocupado";
+                }
 
-            grid.appendChild(tarjeta);
-        });
-        contenedor.appendChild(grid);
-    } catch (e) {
-        console.error(e);
+                let imagen = producto.imagen ? `http://localhost:8000/storage/${producto.imagen}` : "img/sinimagen.png";
+                const badgeDescuento = (producto.descuento && producto.descuento > 0) ? `<span class="badge-descuento">-${producto.descuento}%</span>` : "";
+
+                tarjeta.style.position = "relative";
+                tarjeta.innerHTML = `
+                    ${badgeDescuento}
+                    <img src="${imagen}" alt="${producto.nombre}" class="imagen-producto" onerror="this.src='img/sinimagen.png'">
+                    <div class="contenido-producto">
+                        <h2>${producto.nombre}</h2>
+                        <p class="precio">${producto.precio}€</p>
+                        <p class="status-badge ${claseEstado}">${producto.estado ?? 'Disponible'}</p>
+                        <p class="calificacion">★ ${producto.calificacion ?? '0'}/5</p>
+                    </div>
+                    <button class="btn-producto" ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'disabled style="background: #ccc; cursor: not-allowed;"' : ''}>
+                        ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'No disponible' : 'Añadir al carrito'}
+                    </button>
+                `;
+
+                const btnAccion = tarjeta.querySelector('.btn-producto');
+                if (btnAccion && !btnAccion.disabled) {
+                    btnAccion.onclick = () => añadirAlCarrito(producto, tipo);
+                }
+
+                grid.appendChild(tarjeta);
+            });
+            contenedor.appendChild(grid);
+        } catch (e) {
+            console.error(e);
+        }
     }
-}
 
 // funcion para añadir al carrito (localStorage)
 function añadirAlCarrito(producto, tipo) {
