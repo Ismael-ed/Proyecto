@@ -1,4 +1,4 @@
-const URL_API = "http://localhost:8000/api";
+const URL_API = "https://proyecto-production-7568.up.railway.app/api";
 const listaObjetos = document.getElementById('listaObjetos');
 const formObjeto = document.getElementById('formObjeto');
 
