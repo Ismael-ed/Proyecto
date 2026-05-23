@@ -2,12 +2,10 @@ const token = localStorage.getItem("token");
 const datosUsuario = localStorage.getItem("usuario");
 
 if (!token || !datosUsuario) {
-    alert('Buen intento pero no eres admin, la proxima vez katanazo en la cara');
     window.location.replace("index.html");
 } else {
     const usuario = JSON.parse(datosUsuario);
     if (usuario.tipoUsuario !== "admin") {
-        alert('Buen intento pero no eres admin, la proxima vez katanazo en la cara');
         window.location.replace("index.html");
     } else {
         document.body.style.display = "block";
