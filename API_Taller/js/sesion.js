@@ -94,23 +94,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    //funcion para enviar registro
+    // funcion para enviar registro
     const formRegistro = document.getElementById('formularioRegistro');
     if (formRegistro) {
         formRegistro.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const telefono = document.getElementById('telefono').value;
+            const email = document.getElementById('correo').value;
+            const ps1 = document.getElementById('contrasena').value;
+            const ps2 = document.getElementById('confirmar_contrasena').value;
+
+            const validacionTelf = /^[0-9]{9}$/;
+            if (!validacionTelf.test(telefono)) {
+                alert("El teléfono debe contener exactamente 9 números.");
+                return;
+            }
+
+            if (ps1 !== ps2) {
+                alert("las contraseñas no coinciden.");
+                return;
+            }
+
             const datos = {
                 nombre: document.getElementById('nombre_completo').value,
-                email: document.getElementById('correo').value,
-                telefono: document.getElementById('telefono').value,
-                ps1: document.getElementById('contrasena').value,
-                ps2: document.getElementById('confirmar_contrasena').value
+                email: email,
+                telefono: telefono,
+                ps1: ps1,
+                ps2: ps2
             };
+
             try {
                 await axios.post(`${URL_API}/registro`, datos);
+                alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
                 window.location.href = "login.html";
             } catch (e) {
                 console.error(e);
+                //Estos errores son si encuentra o donde se suele emncionar si la email ya esta creado
+                if (e.response && (e.response.status === 400 || e.response.status === 409 || e.response.status === 422)) {
+                    alert("Error: El correo electrónico ya está registrado o los datos son inválidos.");
+                }
             }
         });
     }
