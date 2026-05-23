@@ -41,9 +41,8 @@ class ObjetoController extends Controller
             $objeto->descuento = $request->descuento;
 
             if ($request->hasFile('imagen')) {
-                $nombre = time().'_'.$request->file('imagen')->getClientOriginalName();
-                $request->file('imagen')->move(public_path('imgs'), $nombre);
-                $objeto->imagen = 'imgs/'.$nombre;
+                $rutaImagen = $request->file('imagen')->store('imgs', 'public');
+                $objeto->imagen = 'storage/' . $rutaImagen;
             } else {
                 $objeto->imagen = 'imgs/default.png';
             }
@@ -82,9 +81,8 @@ class ObjetoController extends Controller
                 $objeto->nombre = $request->nombre; 
             } 
             if ($request->hasFile('imagen')) {
-                $nombre = time().'_'.$request->file('imagen')->getClientOriginalName();
-                $request->file('imagen')->move(public_path('imgs'), $nombre);
-                $objeto->imagen = 'imgs/'.$nombre;
+                $rutaImagen = $request->file('imagen')->store('imgs', 'public');
+                $objeto->imagen = 'storage/' . $rutaImagen;
             }
             if ($request->has('tipo')){
                 $objeto->tipo = $request->tipo;  
