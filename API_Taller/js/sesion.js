@@ -129,6 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = "login.html";
             } catch (e) {
                 console.error(e);
+                // Manejo de errores de validación para verificar si exste el email
+                if (e.response && e.response.status === 422) {
+                    const errores = e.response.data.errors;
+                    }
+                    if (errores.email) {
+                        alert(errores.email[0]);
+                    }
             }
         });
     }
