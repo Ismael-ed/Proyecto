@@ -5,8 +5,8 @@ if (!token || !datosUsuario) {
     alert('Buen intento pero no eres admin, la proxima vez katanazo en la cara');
     window.location.replace("index.html");
 } else {
-    const esAdmin = usuario.tipoUsuario == "admin";
-    if (!esAdmin) {
+    const usuario = JSON.parse(datosUsuario);
+    if (usuario.tipoUsuario !== "admin") {
         alert('Buen intento pero no eres admin, la proxima vez katanazo en la cara');
         window.location.replace("index.html");
     } else {
