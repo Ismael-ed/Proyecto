@@ -33,8 +33,8 @@ function renderObjetos(objetos) {
         let imagen = obj.imagen ? `${URL_BACK}/${obj.imagen}` : "img/sinimagen.png";
         listaObjetos.innerHTML += `
             <tr>
-                <td><img src="${imagen}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;" onerror="this.src='img/sinimagen.png'"></td>
                 <td>${obj.nombre}</td>
+                <td><img src="${imagen}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;" onerror="this.src='img/sinimagen.png'"></td>
                 <td><span class="badge bg-secondary">${obj.tipo}</span></td>
                 <td>${obj.cantidad}</td>
                 <td>${obj.precio}€</td>
