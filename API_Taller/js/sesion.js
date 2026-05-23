@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (estadoTexto === "ocupado") claseEstado = "estado-ocupado";
                 }
 
-                let imagen = producto.imagen ? `http://localhost:8000/storage/${producto.imagen}` : "img/sinimagen.png";
+                let imagen = producto.imagen ? `${URL_API}/${producto.imagen}`: "img/sinimagen.png";
                 const badgeDescuento = (producto.descuento && producto.descuento > 0) ? `<span class="badge-descuento">-${producto.descuento}%</span>` : "";
 
                 tarjeta.style.position = "relative";
