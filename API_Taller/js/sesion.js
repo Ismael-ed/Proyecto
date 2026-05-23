@@ -129,42 +129,59 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = "login.html";
             } catch (e) {
                 console.error(e);
-                //Estos errores son si encuentra o donde se suele emncionar si la email ya esta creado
-                if (e.response && (e.response.status === 400 || e.response.status === 409 || e.response.status === 422)) {
-                    alert("Error: El correo electrónico ya está registrado o los datos son inválidos.");
-                }
             }
         });
     }
 
     // funcion para enviar cita
-    const btnEnviarCita = document.getElementById('btnEnviarCita');
-    if (btnEnviarCita) {
-        btnEnviarCita.addEventListener('click', async () => {
-            let idCliente = null;
-            if (datosUsuario) {
-                idCliente = JSON.parse(datosUsuario).id;
-            }
+        const btnEnviarCita = document.getElementById('btnEnviarCita');
+        if (btnEnviarCita) {
+            btnEnviarCita.addEventListener('click', async () => {
+                let idCliente = null;
+                if (datosUsuario) {
+                    idCliente = JSON.parse(datosUsuario).id;
+                }
 
-            const data = {
-                nombre: document.getElementById('nombre').value,
-                correo: document.getElementById('correo').value,
-                telefono: document.getElementById('telefono').value,
-                numMatricula: document.getElementById('numMatricula').value,
-                numIdC: document.getElementById('numIdC').value,
-                tipoConsulta: document.getElementById('tipoConsulta').value,
-                informacionAdicional: document.getElementById('informacionAdicional')?.value || "",
-                idCliente: idCliente
-            };
+                const telefono = document.getElementById('telefono').value;
+                const correo = document.getElementById('correo').value;
+                const informacionAdicional = document.getElementById('informacionAdicional')?.value || "";
 
-            try {
-                await axios.post(`${URL_API}/citas`, data);
-                window.location.reload();
-            } catch (e) {
-                console.error(e);
-            }
-        });
-    }
+                const validacionTelf = /^[0-9]{9}$/;
+                if (!validacionTelf.test(telefono)) {
+                    alert("El teléfono debe contener exactamente 9 números.");
+                    return;
+                }
+
+                const validacionEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!validacionEmail.test(correo)) {
+                    alert("El formato del correo no es válido.");
+                    return;
+                }
+
+                if (informacionAdicional === "") {
+                    alert("La información adicional no puede estar vacía.");
+                    return;
+                }
+
+                const data = {
+                    nombre: document.getElementById('nombre').value,
+                    correo: correo,
+                    telefono: telefono,
+                    numMatricula: document.getElementById('numMatricula').value,
+                    numIdC: document.getElementById('numIdC').value,
+                    tipoConsulta: document.getElementById('tipoConsulta').value,
+                    informacionAdicional: informacionAdicional,
+                    idCliente: idCliente
+                };
+
+                try {
+                    await axios.post(`${URL_API}/citas`, data);
+                    window.location.reload();
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+        }
 
     if (window.location.pathname.includes("carrito.html")) {
         renderizarCarrito();
