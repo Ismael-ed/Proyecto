@@ -2,6 +2,7 @@ const token = localStorage.getItem("token");
 const datosUsuario = localStorage.getItem("usuario");
 
 if (!token || !datosUsuario) {
+    alert('Buen intento pero no eres admin, la proxima vez katanazo en la cara');
     window.location.replace("index.html");
 } else {
     const esAdmin = usuario.tipoUsuario == "admin";
