@@ -7,9 +7,7 @@ if (!token || !datosUsuario) {
     const usuario = JSON.parse(datosUsuario);
     if (usuario.tipoUsuario !== "admin") {
         window.location.replace("index.html");
-    } else {
-        document.body.style.display = "block";
-    }
+    } 
 }
 
 const URL_API = "https://proyecto-production-7568.up.railway.app/api";
