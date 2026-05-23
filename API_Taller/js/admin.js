@@ -3,8 +3,8 @@ const datosUsuario = localStorage.getItem("usuario");
 const esAdmin = usuario.tipoUsuario === 'admin';
 
 if (!esAdmin || !token) {
-    window.location.href = "index.html";
     alert('Buen intento pero no eres admin');
+    window.location.replace = "index.html";
 }else{
     document.body.style.display = "block";
 }
