@@ -1,9 +1,3 @@
-const URL_API = "https://proyecto-production-7568.up.railway.app/api";
-const listaObjetos = document.getElementById('listaObjetos');
-const formObjeto = document.getElementById('formObjeto');
-
-document.addEventListener('DOMContentLoaded', getObjetos);
-
 const token = localStorage.getItem("token");
 const datosUsuario = localStorage.getItem("usuario");
 const esAdmin = usuario.tipoUsuario === 'admin';
@@ -12,6 +6,12 @@ if (!esAdmin || !token) {
     window.location.href = "index.html";
     alert('Buen intento pero no eres admin');
 }
+
+const URL_API = "https://proyecto-production-7568.up.railway.app/api";
+const listaObjetos = document.getElementById('listaObjetos');
+const formObjeto = document.getElementById('formObjeto');
+
+document.addEventListener('DOMContentLoaded', getObjetos);
 
 async function getObjetos() {
     try {
