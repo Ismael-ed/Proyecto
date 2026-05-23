@@ -1,12 +1,15 @@
 const token = localStorage.getItem("token");
 const datosUsuario = localStorage.getItem("usuario");
-const esAdmin = usuario.tipoUsuario === 'admin';
 
-if (!esAdmin || !token) {
-    alert('Buen intento pero no eres admin');
-    window.location.replace = "index.html";
-}else{
-    document.body.style.display = "block";
+if (!token || !datosUsuario) {
+    window.location.replace("index.html");
+} else {
+    const usuario = JSON.parse(datosUsuario);
+    if (usuario.tipoUsuario !== "admin") {
+        window.location.replace("index.html");
+    } else {
+        document.body.style.display = "block";
+    }
 }
 
 const URL_API = "https://proyecto-production-7568.up.railway.app/api";
