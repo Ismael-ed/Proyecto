@@ -11,6 +11,7 @@ if (!token || !datosUsuario) {
 }
 
 const URL_API = "https://proyecto-production-7568.up.railway.app/api";
+const URL_BACK = "https://proyecto-production-7568.up.railway.app";
 const listaObjetos = document.getElementById('listaObjetos');
 const formObjeto = document.getElementById('formObjeto');
 
@@ -29,8 +30,10 @@ async function getObjetos() {
 function renderObjetos(objetos) {
     listaObjetos.innerHTML = "";
     objetos.forEach(obj => {
+        let imagen = obj.imagen ? `${URL_BACK}/${obj.imagen}` : "img/sinimagen.png";
         listaObjetos.innerHTML += `
             <tr>
+                <td><img src="${imagen}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;" onerror="this.src='img/sinimagen.png'"></td>
                 <td>${obj.nombre}</td>
                 <td><span class="badge bg-secondary">${obj.tipo}</span></td>
                 <td>${obj.cantidad}</td>
