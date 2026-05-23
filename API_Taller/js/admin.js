@@ -4,6 +4,15 @@ const formObjeto = document.getElementById('formObjeto');
 
 document.addEventListener('DOMContentLoaded', getObjetos);
 
+const token = localStorage.getItem("token");
+const datosUsuario = localStorage.getItem("usuario");
+const esAdmin = usuario.tipoUsuario === 'admin';
+
+if (!esAdmin || !token) {
+    window.location.href = "index.html";
+    alert('Buen intento pero no eres admin');
+}
+
 async function getObjetos() {
     try {
         const res = await axios.get(`${URL_API}/objetos`, {
