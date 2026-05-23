@@ -6,9 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenedorDerecho = document.querySelector('.cabecera-derecha');
     const menuNavegacion = document.querySelector('.menu-cabecera') || document.querySelector('nav');
     const datosUsuario = localStorage.getItem('usuario');
-    const token = localStorage.getItem("token");
 
-    if (datosUsuario && token && contenedorDerecho) {
+    if (datosUsuario  && contenedorDerecho) {
         const usuario = JSON.parse(datosUsuario);
         const inicial = usuario.nombre ? usuario.nombre.charAt(0).toUpperCase() : '?';
         const esAdmin = usuario.tipoUsuario === 'admin';
