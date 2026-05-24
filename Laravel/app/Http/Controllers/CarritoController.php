@@ -146,9 +146,21 @@ class CarritoController extends Controller
 
             if ($precioTotal > 25) {
 
+                $puntosUser = $user->puntosRacha + 1;
+            
+                $datosActualizar = [
+                    'puntosRacha' => $puntosUser
+                ];
+            
+                if ($puntosUser >= 5) {
+            
+                    $datosActualizar['descuentoActivo'] = true;
+                    $datosActualizar['puntosRacha'] = 0;
+                }
+            
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update(['puntosRacha' => $user->puntosRacha + 1]);
+                    ->update($datosActualizar);
             }
 
             DB::commit();
