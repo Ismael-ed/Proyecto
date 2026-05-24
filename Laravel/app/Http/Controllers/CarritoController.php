@@ -39,12 +39,17 @@ class CarritoController extends Controller
             $listaObjetos = '';
 
             $hayCompras = false;
+            $hayAlquileres = false;
             $idCompra = null;
+            $idAlquiler = null;
 
             foreach ($carrito as $item) {
 
                 if ($item['tipo'] == 'compra') {
                     $hayCompras = true;
+                }
+                if ($item['tipo'] == 'alquiler') {
+                    $hayAlquileres = true;
                 }
             }
 
@@ -64,55 +69,59 @@ class CarritoController extends Controller
                             'idObjeto' => $item['idObjeto'],
                             'cantidad' => $item['cantidad']
                         ]);
+
+                        $objeto = DB::table('objetos')
+                        ->where('id', $item['idObjeto'])
+                        ->first();
+    
+                        if ($objeto->cantidad < $item['cantidad']) {
+                            throw new Exception('No hay suficiente stock de ' . $objeto->nombre);
+                        }
+    
+                        DB::table('objetos')
+                            ->where('id', $item['idObjeto'])
+                            ->update(['cantidad' => $objeto->cantidad - $item['cantidad']]);
+                    }
+                }
+            }
+       
+            if ($hayAlquileres) {
+    
+                $primerAlquiler = null;
+    
+                foreach ($carrito as $item) {
+    
+                    if ($item['tipo'] == 'alquiler') {
+                        $primerAlquiler = $item;
+                        break;
+                    }
+                }
+    
+                $idAlquiler = DB::table('alquileres')->insertGetId([
+                    'fechaInicio' => $primerAlquiler['fechaInicio'],
+                    'fechaFin' => $primerAlquiler['fechaFin'],
+                    'idCliente' => $user->id
+                ]);
+    
+                foreach ($carrito as $item) {
+    
+                    if ($item['tipo'] == 'alquiler') {
+    
+                        DB::table('alquiler_objeto')->insert([
+                            'idAlquiler' => $idAlquiler,
+                            'idObjeto' => $item['idObjeto'],
+                            'cantidad' => $item['cantidad']
+                        ]);
+
+                        DB::table('objetos')
+                        ->where('id', $item['idObjeto'])
+                        ->update(['estado' => 'ocupado']);
                     }
                 }
             }
 
-            $hayAlquileres = false;
-            $idAlquiler = null;
 
             foreach ($carrito as $item) {
-
-                if ($item['tipo'] == 'alquiler') {
-                    $hayAlquileres = true;
-                }
-            }
-
-        
-        if ($hayAlquileres) {
-
-            $primerAlquiler = null;
-
-            foreach ($carrito as $item) {
-
-                if ($item['tipo'] == 'alquiler') {
-                    $primerAlquiler = $item;
-                    break;
-                }
-            }
-
-            $idAlquiler = DB::table('alquileres')->insertGetId([
-                'fechaInicio' => $primerAlquiler['fechaInicio'],
-                'fechaFin' => $primerAlquiler['fechaFin'],
-                'idCliente' => $user->id
-            ]);
-
-            foreach ($carrito as $item) {
-
-                if ($item['tipo'] == 'alquiler') {
-
-                    DB::table('alquiler_objeto')->insert([
-                        'idAlquiler' => $idAlquiler,
-                        'idObjeto' => $item['idObjeto'],
-                        'cantidad' => $item['cantidad']
-                    ]);
-                }
-            }
-        }
-
-
-            foreach ($carrito as $item) {
-
                 $listaObjetos .= $item['nombre'] . ', ';
             }
 
@@ -132,18 +141,14 @@ class CarritoController extends Controller
 
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update([
-                        'descuentoActivo' => false
-                    ]);
+                    ->update(['descuentoActivo' => false]);
             }
 
             if ($precioTotal > 25) {
 
                 DB::table('users')
                     ->where('id', $user->id)
-                    ->update([
-                        'puntosRacha' => $user->puntosRacha + 1
-                    ]);
+                    ->update(['puntosRacha' => $user->puntosRacha + 1]);
             }
 
             DB::commit();
