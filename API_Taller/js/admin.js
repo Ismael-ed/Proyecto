@@ -31,6 +31,7 @@ async function getObjetos() {
     } catch (e) { console.error(e); }
 }
 
+//funcion para cargar objetos
 function renderObjetos(objetos) {
     listaAlquileres.innerHTML = "";
     listaVentas.innerHTML = "";
@@ -59,13 +60,13 @@ function renderObjetos(objetos) {
         }
     });
 }
-
+//funcion para limpiar datos
 function prepararNuevo() {
     formObjeto.reset();
     document.getElementById('objeto_id').value = "";
     document.getElementById('tituloModal').textContent = "Añadir Nuevo Objeto";
 }
-
+//funcion para editar objetos
 function editarObjeto(obj) {
     document.getElementById('objeto_id').value = obj.id;
     document.getElementById('tituloModal').textContent = "Editar Objeto";
@@ -108,6 +109,7 @@ formObjeto.addEventListener('submit', async (e) => {
     } catch (e) { console.error(e); }
 });
 
+//funcion para elminar objetos
 async function eliminarObjeto(id) {
     if (!confirm("¿Borrar?")) return;
     try {
@@ -129,6 +131,7 @@ async function getCitas() {
     } catch (e) { console.error(e); }
 }
 
+//funcion para cargar citas
 function renderCitas(citas) {
     listaCitas.innerHTML = "";
     citas.forEach(cita => {
@@ -152,6 +155,7 @@ function renderCitas(citas) {
     });
 }
 
+//funcion para ver citas
 function verCita(cita) {
     const contenedor = document.getElementById('detalleCitaContenido');
     document.getElementById('cita_id_finalizar').value = cita.id;
@@ -175,6 +179,7 @@ function verCita(cita) {
     modal.show();
 }
 
+//funcion para actualizar citas y finalizarlas
 async function finalizarCita() {
     const id = document.getElementById('cita_id_finalizar').value;
     try {

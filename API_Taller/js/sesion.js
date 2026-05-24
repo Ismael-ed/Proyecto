@@ -343,12 +343,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tarjeta = document.createElement("div");
                 tarjeta.classList.add("card-producto");
 
-                // Validamos disponibilidad: Debe tener estado 'disponible' Y cantidad > 0
                 const estadoTexto = producto.estado ? producto.estado.toLowerCase() : 'disponible';
                 const tieneStock = parseInt(producto.cantidad) > 0;
                 const estaDisponible = estadoTexto === 'disponible' && tieneStock;
                 
-                // Si no hay stock o no está disponible, usamos la clase de error
                 let claseEstado = estaDisponible ? "estado-disponible" : "estado-mantenimiento";
                 let textoStatus = estaDisponible ? "Disponible" : (tieneStock ? producto.estado : "Agotado");
 
@@ -458,118 +456,67 @@ function añadirAlCarrito(producto, tipo) {
     );
 }
 
-// funcion para renderizar la lista del carrito
-function renderizarCarrito() {
+    // funcion para renderizar la lista del carrito
+    function renderizarCarrito() {
+        const lista = document.getElementById('lista-productos-carrito');
+        const subtotalElem = document.getElementById('subtotal-precio');
+        const descuentoElem = document.getElementById('descuento-aplicado'); // El campo que estaba vacío
+        const totalElem = document.getElementById('total-final');
 
-    const lista = document.getElementById('lista-productos-carrito');
+        if (!lista) return;
 
-    const subtotalElem = document.getElementById('subtotal-precio');
+        let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+        let localUser = JSON.parse(localStorage.getItem('usuario'));
+        
+        lista.innerHTML = "";
+        let subtotal = 0;
 
-    const totalElem = document.getElementById('total-final');
+        carrito.forEach((item, index) => {
+            subtotal += item.precio * item.cantidad;
 
-    if (!lista) return;
+            const div = document.createElement('div');
+            div.className = "item-carrito d-flex justify-content-between align-items-center mb-2 p-2 border-bottom";
 
-    let carrito =
-        JSON.parse(localStorage.getItem('carrito')) || [];
+            let detalleAlquiler = "";
+            if (item.tipo === 'alquiler') {
+                detalleAlquiler = `<br><small class="text-muted">Meses: ${item.cantidad} | Fin: ${item.fechaFin}</small>`;
+            }
 
-    lista.innerHTML = "";
-
-    let subtotal = 0;
-
-    carrito.forEach((item, index) => {
-
-        subtotal += item.precio * item.cantidad;
-
-        const div = document.createElement('div');
-
-        div.className =
-            "item-carrito d-flex justify-content-between align-items-center mb-2 p-2 border-bottom";
-
-        let detalleAlquiler = "";
-
-        if (item.tipo === 'alquiler') {
-
-            detalleAlquiler = `
-                <div class="small text-muted">
-                    Meses:
-                    <input
-                        type="number"
-                        value="${item.cantidad}"
-                        min="1"
-                        style="width:50px"
-                        onchange="actualizarMeses(${index}, this.value)"
-                    >
-
-                    <br>
-
-                    Inicio: ${item.fechaInicio}
-
-                    <br>
-
-                    Fin: ${item.fechaFin}
+            div.innerHTML = `
+                <div>
+                    <strong>${item.nombre}</strong> (${item.tipo}) ${detalleAlquiler}
+                    <br><span>${item.precio}€ x ${item.cantidad}</span>
                 </div>
+                <button class="btn btn-sm btn-danger" onclick="eliminarDelCarrito(${index})">Eliminar</button>
             `;
+            lista.appendChild(div);
+        });
+
+        let porcentajeDesc = 0;
+        let ahorro = 0;
+
+        if (localUser && (localUser.descuentoActivo == true || localUser.descuentoActivo == 1)) {
+            porcentajeDesc = 10; // Suponiendo un 10% de descuento
+            ahorro = subtotal * (porcentajeDesc / 100);
         }
 
-        div.innerHTML = `
-            <div>
+        let totalFinal = subtotal - ahorro;
 
-                <strong>${item.nombre}</strong>
+        if (subtotalElem) subtotalElem.innerText = subtotal.toFixed(2) + "€";
+        
+        if (descuentoElem) {
+            descuentoElem.innerText = porcentajeDesc > 0 ? `-${porcentajeDesc}% (${ahorro.toFixed(2)}€)` : "0%";
+            descuentoElem.style.color = porcentajeDesc > 0 ? "red" : "inherit";
+        }
 
-                (${item.tipo})
+        if (totalElem) totalElem.innerText = totalFinal.toFixed(2) + "€";
 
-                <br>
+        const btnVaciar = document.getElementById('btnVaciarCarrito');
+        if (btnVaciar) btnVaciar.onclick = () => { localStorage.removeItem('carrito'); renderizarCarrito(); };
 
-                <span>
-                    ${item.precio}€
-                    ${item.tipo === 'alquiler'
-                        ? 'al mes'
-                        : 'x ' + item.cantidad}
-                </span>
-
-                ${detalleAlquiler}
-
-            </div>
-
-            <button
-                class="btn btn-sm btn-danger"
-                onclick="eliminarDelCarrito(${index})">
-
-                Eliminar
-
-            </button>
-        `;
-
-        lista.appendChild(div);
-    });
-
-    if (subtotalElem) {
-        subtotalElem.innerText = subtotal.toFixed(2) + "€";
+        const btnFinalizar = document.getElementById('btnFinalizarCompra');
+        if (btnFinalizar) btnFinalizar.onclick = finalizarCompra;
     }
-
-    if (totalElem) {
-        totalElem.innerText = subtotal.toFixed(2) + "€";
-    }
-
-    const btnVaciar = document.getElementById('btnVaciarCarrito');
-
-    if (btnVaciar) {
-
-        btnVaciar.onclick = () => {
-
-            localStorage.removeItem('carrito');
-
-            renderizarCarrito();
-        };
-    }
-
-    const btnFinalizar = document.getElementById('btnFinalizarCompra');
-
-    if (btnFinalizar) {
-
-        btnFinalizar.onclick = finalizarCompra;
-    }
-}
 
 // Función para actualizar meses de alquiler
 window.actualizarMeses = function(index, valor) {
@@ -615,26 +562,20 @@ window.eliminarDelCarrito = function(index) {
 // funcion para finalizar compra enviando al backend
 
 async function finalizarCompra() {
-
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-
-    if (carrito.length === 0) {
-        alert("El carrito está vacío");
-        return;
-    }
-
+    const localUser = JSON.parse(localStorage.getItem('usuario'));
     const token = localStorage.getItem('token');
 
-    if (!token) {
-        alert("Debes iniciar sesión");
-        return;
-    }
+    if (carrito.length === 0 || !token) return;
 
     let totalNum = 0;
-
     carrito.forEach(item => {
         totalNum += Number(item.precio) * Number(item.cantidad);
     });
+
+    if (localUser && (localUser.descuentoActivo == true || localUser.descuentoActivo == 1)) {
+        totalNum = totalNum * 0.90;
+    }
 
     totalNum = Number(totalNum.toFixed(2));
 
@@ -644,11 +585,8 @@ async function finalizarCompra() {
         metodoPago: 'efectivo'
     };
 
-    console.log("PAYLOAD ENVIADO:", payload);
-
     try {
-
-        const res = await axios.post(
+        await axios.post(
             `${URL_API}/carrito/finalizar`,
             payload,
             {
@@ -658,23 +596,53 @@ async function finalizarCompra() {
                 }
             }
         );
-
-        console.log("RESPUESTA:", res.data);
-
         localStorage.removeItem('carrito');
-
         window.location.href = "index.html";
-
     } catch (e) {
+        console.error(e);
+    }
+}
 
-        console.error("ERROR COMPLETO:", e);
+async function cargarDatosPerfil() {
+    const localUser = JSON.parse(localStorage.getItem('usuario'));
+    if (!localUser) return;
 
-        if (e.response) {
-            console.error("RESPUESTA BACKEND:", e.response.data);
-            alert("Error backend: " + JSON.stringify(e.response.data));
-        } else {
-            alert("Error de conexión");
-        }
+    const mapping = {
+        'nombre': localUser.nombre,
+        'email': localUser.email,
+        'email_perfil': localUser.email,
+        'telefono': localUser.telefono
+    };
+
+    for (let id in mapping) {
+        const el = document.getElementById(id);
+        if (el) el.value = mapping[id] || '';
+    }
+
+    const displayId = document.getElementById('display-id');
+    if (displayId) displayId.textContent = `#${localUser.id}`;
+
+    const puntos = localUser.puntosRacha || 0;
+    const contenedor = document.getElementById('contenedor-racha');
+    if (contenedor) {
+        const circulos = contenedor.querySelectorAll('i');
+        circulos.forEach((circulo, index) => {
+            if (index < puntos) {
+                circulo.classList.replace('bi-circle', 'bi-circle-fill');
+            } else {
+                circulo.classList.replace('bi-circle-fill', 'bi-circle');
+            }
+        });
+    }
+
+    const statusCaja = document.getElementById('status-descuento');
+    if (statusCaja) {
+        const esActivo = localUser.descuentoActivo == 1 || localUser.descuentoActivo == true;
+        statusCaja.classList.toggle('activo', esActivo);
+        const txt = document.getElementById('descuento-texto');
+        if (txt) txt.textContent = esActivo ? "DESCUENTO DISPONIBLE" : "SIN DESCUENTO ACTIVO";
+        const ico = document.getElementById('descuento-icono');
+        if (ico) ico.textContent = esActivo ? "redeem" : "lock";
     }
 }
 
