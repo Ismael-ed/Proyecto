@@ -596,6 +596,12 @@ async function finalizarCompra() {
                 }
             }
         );
+
+        const resUser = await axios.get(`${URL_API}/user`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        localStorage.setItem('usuario', JSON.stringify(resUser.data));
+
         localStorage.removeItem('carrito');
         window.location.href = "index.html";
     } catch (e) {
@@ -604,45 +610,47 @@ async function finalizarCompra() {
 }
 
 async function cargarDatosPerfil() {
-    const localUser = JSON.parse(localStorage.getItem('usuario'));
-    if (!localUser) return;
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
 
-    const mapping = {
-        'nombre': localUser.nombre,
-        'email': localUser.email,
-        'email_perfil': localUser.email,
-        'telefono': localUser.telefono
-    };
-
-    for (let id in mapping) {
-        const el = document.getElementById(id);
-        if (el) el.value = mapping[id] || '';
-    }
-
-    const displayId = document.getElementById('display-id');
-    if (displayId) displayId.textContent = `#${localUser.id}`;
-
-    const puntos = localUser.puntosRacha || 0;
-    const contenedor = document.getElementById('contenedor-racha');
-    if (contenedor) {
-        const circulos = contenedor.querySelectorAll('i');
-        circulos.forEach((circulo, index) => {
-            if (index < puntos) {
-                circulo.classList.replace('bi-circle', 'bi-circle-fill');
-            } else {
-                circulo.classList.replace('bi-circle-fill', 'bi-circle');
-            }
+        const res = await axios.get(`${URL_API}/user`, {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
-    }
+        
+        const usuarioActualizado = res.data;
+        localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
 
-    const statusCaja = document.getElementById('status-descuento');
-    if (statusCaja) {
-        const esActivo = localUser.descuentoActivo == 1 || localUser.descuentoActivo == true;
-        statusCaja.classList.toggle('activo', esActivo);
-        const txt = document.getElementById('descuento-texto');
-        if (txt) txt.textContent = esActivo ? "DESCUENTO DISPONIBLE" : "SIN DESCUENTO ACTIVO";
-        const ico = document.getElementById('descuento-icono');
-        if (ico) ico.textContent = esActivo ? "redeem" : "lock";
+        if(document.getElementById('nombre')) document.getElementById('nombre').value = usuarioActualizado.nombre || '';
+        if(document.getElementById('email')) document.getElementById('email').value = usuarioActualizado.email || '';
+        if(document.getElementById('telefono')) document.getElementById('telefono').value = usuarioActualizado.telefono || '';
+        if(document.getElementById('display-id')) document.getElementById('display-id').innerText = `#${usuarioActualizado.id}`;
+
+        const puntos = usuarioActualizado.puntosRacha || 0;
+        const contenedorRacha = document.getElementById('contenedor-racha');
+        if (contenedorRacha) {
+            const circulos = contenedorRacha.querySelectorAll('i');
+            circulos.forEach((circulo, index) => {
+                if (index < puntos) {
+                    circulo.classList.replace('bi-circle', 'bi-circle-fill');
+                } else {
+                    circulo.classList.replace('bi-circle-fill', 'bi-circle');
+                }
+            });
+        }
+
+        const statusCaja = document.getElementById('status-descuento');
+        if (statusCaja) {
+            const esActivo = usuarioActualizado.descuentoActivo == 1 || usuarioActualizado.descuentoActivo == true;
+            statusCaja.classList.toggle('activo', esActivo);
+            const txt = document.getElementById('descuento-texto');
+            if (txt) txt.textContent = esActivo ? "DESCUENTO DISPONIBLE" : "SIN DESCUENTO ACTIVO";
+            const ico = document.getElementById('descuento-icono');
+            if (ico) ico.textContent = esActivo ? "redeem" : "lock";
+        }
+
+    } catch (e) {
+        console.error("Error al sincronizar datos de usuario:", e);
     }
 }
 
