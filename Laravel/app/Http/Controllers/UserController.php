@@ -29,32 +29,18 @@ class UserController extends Controller
         try {
             $request->validate([
                 'nombre' => 'required',
-                'email' => 'required',
-                'password' => 'nullable',
                 'telefono' => 'nullable',
-                'descuentoactivo' => 'nullable'
             ]);
 
 
             if ($request->has('nombre')){
                 $user->nombre = $request->nombre;
             } 
-            if ($request->has('email')){
-                $user->email = $request->email;
-            } 
-            if ($request->has('password') && $request->password != '') {
-                $user->password = Hash::make($request->password);
+            
             }
             if ($request->has('telefono')){
                 $user->telefono = $request->telefono;
             } 
-            if ($request->has('tipoUsuario')){
-                $user->tipoUsuario = $request->tipoUsuario;
-            } 
-            if ($request->has('descuentoactivo')){
-                $user->descuentoactivo = $request->descuentoactivo;
-            } 
-
 
             if ($user->save()) {
                 return $user;
