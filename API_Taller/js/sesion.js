@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cargarDatosPerfil(); 
     });
 
-    // funcion para cargar productos
+    //funcion para cargar productos en tienda y alquiler
     async function cargarProductos() {
         const ruta = window.location.pathname;
         let tipo = null;
@@ -343,13 +343,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tarjeta = document.createElement("div");
                 tarjeta.classList.add("card-producto");
 
-                let claseEstado = "estado-disponible";
+                // Validamos disponibilidad: Debe tener estado 'disponible' Y cantidad > 0
                 const estadoTexto = producto.estado ? producto.estado.toLowerCase() : 'disponible';
-
-                if (tipo === "alquiler") {
-                    if (estadoTexto === "mantenimiento") claseEstado = "estado-mantenimiento";
-                    if (estadoTexto === "ocupado") claseEstado = "estado-ocupado";
-                }
+                const tieneStock = parseInt(producto.cantidad) > 0;
+                const estaDisponible = estadoTexto === 'disponible' && tieneStock;
+                
+                // Si no hay stock o no está disponible, usamos la clase de error
+                let claseEstado = estaDisponible ? "estado-disponible" : "estado-mantenimiento";
+                let textoStatus = estaDisponible ? "Disponible" : (tieneStock ? producto.estado : "Agotado");
 
                 let imagen = producto.imagen ? `https://proyecto-production-7568.up.railway.app/${producto.imagen}` : "img/sinimagen.png";
                 const badgeDescuento = (producto.descuento && producto.descuento > 0) ? `<span class="badge-descuento">-${producto.descuento}%</span>` : "";
@@ -361,11 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="contenido-producto">
                         <h2>${producto.nombre}</h2>
                         <p class="precio">${producto.precio}€</p>
-                        <p class="status-badge ${claseEstado}">${producto.estado ?? 'Disponible'}</p>
+                        <p class="status-badge ${claseEstado}">${textoStatus}</p>
                         <p class="calificacion">★ ${producto.calificacion ?? '0'}/5</p>
                     </div>
-                    <button class="btn-producto" ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'disabled style="background: #ccc; cursor: not-allowed;"' : ''}>
-                        ${estadoTexto !== 'disponible' && tipo === 'alquiler' ? 'No disponible' : 'Añadir al carrito'}
+                    <button class="btn-producto" ${!estaDisponible ? 'disabled style="background: #ccc; cursor: not-allowed;"' : ''}>
+                        ${estaDisponible ? 'Añadir al carrito' : 'No disponible'}
                     </button>
                 `;
 
