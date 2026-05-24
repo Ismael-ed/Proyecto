@@ -165,10 +165,7 @@ class CarritoController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'idFactura' => $idFactura
-            ]);
+            return response()->json(['idFactura' => $idFactura]);
 
         } catch (Exception $e) {
 
@@ -192,12 +189,8 @@ class CarritoController extends Controller
 
             return response()->json($facturas);
 
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'success' => false,
-                'mensaje' => $e->getMessage()
-            ], 500);
+        } catch (\Throwable $th) {
+            return response(['mensaje' => $th->getMessage()], 500);
         }
     }
 
@@ -269,17 +262,10 @@ class CarritoController extends Controller
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'items' => $items
-            ]);
+            return response()->json(['items' => $items]);
 
         } catch (\Throwable $th) {
-
-            return response()->json([
-                'success' => false,
-                'mensaje' => $th->getMessage()
-            ], 500);
+            return response(['mensaje' => $th->getMessage()], 500);
         }
     }
 }
